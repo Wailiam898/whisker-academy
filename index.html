@@ -436,7 +436,65 @@ function load(){
   return defaults();
 }
 let S=load();
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));return true}catch(e){console.warn('Save failed',e);return false}}
+function save(){S.savedAt=Date.now();cloudQueue();try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));return true}catch(e){console.warn('Save failed',e);return false}}
+
+/* ---------------- cloud saves (Supabase, name = account) ---------------- */
+const CLOUD={url:'https://qevfbqsutnhgpvnyfopb.supabase.co/rest/v1/rpc/',key:'sb_publishable_yX82xUvRtTFyPscUBp5huA_sZR47ql6'};
+let cloudState='idle',cloudTimer=null,cloudBusy=false,cloudAgain=false;
+const cloudOn=()=>!!(S.name&&S.cloud);
+async function rpc(fn,body){
+  const r=await fetch(CLOUD.url+fn,{method:'POST',headers:{apikey:CLOUD.key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error('cloud '+r.status);
+  return r.json();
+}
+function cloudLoad(name){return rpc('wa_load',{p_name:name})}
+function cloudQueue(){if(!cloudOn())return;clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudPush,1500)}
+function mergeFrom(c){ // combine progress from two devices: nothing earned on either is lost
+  const mx=(a,b)=>{const o=Object.assign({},a);for(const k in b)o[k]=Math.max(o[k]||0,b[k]||0);return o};
+  S.stars=mx(S.stars,c.stars);S.stickers=mx(S.stickers,c.stickers);
+  const f=Object.assign({},c.facts);for(const k in S.facts){if(!f[k]||(S.facts[k].seen||0)>=(f[k].seen||0))f[k]=S.facts[k]}S.facts=f;
+  S.owned=[...new Set([...(S.owned||[]),...(c.owned||[])])];S.badges=[...new Set([...(S.badges||[]),...(c.badges||[])])];
+  const seen=new Set(S.drawings.map(d=>d.img));S.drawings=S.drawings.concat((c.drawings||[]).filter(d=>!seen.has(d.img))).slice(0,40);
+  S.stats=mx(S.stats,c.stats);
+  if(c.streak&&(c.streak.count||0)>(S.streak.count||0))S.streak=c.streak;
+  for(const k of['giftDay','drawDay','challengeDay'])if((c[k]||'')>(S[k]||''))S[k]=c[k];
+  const base=S.baseYarn==null?Math.min(S.yarn,c.yarn||0):S.baseYarn;
+  S.yarn=Math.max(0,S.yarn+(c.yarn||0)-base);
+}
+function progressScore(x){if(!x||x.v!==1)return -1;const st=Object.values(x.stars||{}).reduce((a,b)=>a+b,0);return st*100000+((x.stats&&x.stats.answered)||0)*10+Object.keys(x.stickers||{}).length}
+function persistLocal(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+async function cloudPush(){
+  if(!cloudOn())return;if(cloudBusy){cloudAgain=true;return}
+  cloudBusy=true;setCloud('saving');
+  try{
+    const at=S.savedAt||Date.now();
+    let r=await rpc('wa_save',{p_name:S.name,p_data:S,p_saved_at:at,p_base:S.syncedAt||0});
+    for(let tries=0;r&&r.ok===false&&tries<3;tries++){ // another device saved since we last synced: merge both
+      const c=await cloudLoad(S.name);
+      if(c&&c.data&&c.data.v===1){mergeFrom(c.data);if(!(UI.screen==='play'&&P))render()}
+      const t=Math.max(Date.now(),(c&&c.saved_at||0)+1);S.savedAt=t;
+      r=await rpc('wa_save',{p_name:S.name,p_data:S,p_saved_at:t,p_base:c?c.saved_at:0});
+    }
+    if(r&&r.ok){S.syncedAt=r.saved_at;S.baseYarn=S.yarn;persistLocal()}
+    setCloud('ok');
+  }catch(e){setCloud('off')}
+  cloudBusy=false;if(cloudAgain){cloudAgain=false;cloudQueue()}
+}
+function adopt(data,at){
+  const d=defaults();
+  S=Object.assign(d,data,{stats:Object.assign(d.stats,data.stats),settings:Object.assign(d.settings,data.settings),equipped:Object.assign(d.equipped,data.equipped)});
+  S.cloud=true;S.savedAt=at||S.savedAt;S.syncedAt=at||S.savedAt;S.baseYarn=S.yarn;persistLocal();
+}
+function setCloud(st){cloudState=st;const el=document.getElementById('cloudPill');if(el){el.textContent=st==='off'?'☁️✕':st==='saving'?'☁️…':'☁️✓';el.title=st==='off'?'Offline: progress is saved on this device and will sync later':'Progress saved to the cloud'}}
+async function cloudSync(){ // on start-up: pull newer progress made on another device
+  if(!cloudOn())return;
+  try{const c=await cloudLoad(S.name);
+    if(c&&c.data&&c.data.v===1&&(c.saved_at||0)>(S.syncedAt||0)&&(S.savedAt||0)<=(S.syncedAt||0)){if(UI.screen==='play'&&P)return;adopt(c.data,c.saved_at);render();setCloud('ok')}
+    else if(!c||(S.savedAt||0)>(S.syncedAt||0)||(c.saved_at||0)>(S.syncedAt||0))cloudPush();else setCloud('ok');
+  }catch(e){setCloud('off')}
+}
+window.addEventListener('online',()=>cloudOn()&&cloudPush());
+document.addEventListener('visibilitychange',()=>{if(!cloudOn())return;if(document.hidden){clearTimeout(cloudTimer);cloudPush()}else cloudSync()});
 
 /* ---------------- sound (synthesised, no files) ---------------- */
 let AC=null;
@@ -741,7 +799,7 @@ function render(){
 function topBar(){
   return `<header class="topbar"><div class="me">${catHTML(44,'happy')}<div><div class="nm">${esc(S.name)}</div><div class="rk">${rankInfo().name}</div></div></div><div class="sp"></div>
   <div class="pill" title="Stars">⭐ ${totalStars()}</div><div class="pill" title="Yarn (spend it in the Closet)">🧶 <span id="yarnN">${S.yarn}</span></div><div class="pill" title="Days in a row">🔥 ${S.streak.count}</div>
-  <button class="pill gear" data-act="parents" aria-label="Grown-ups corner">⚙️</button></header>`;
+  <button class="pill" id="cloudPill" data-act="cloudInfo" aria-label="Cloud save status">${!S.cloud?'📱':cloudState==='off'?'☁️✕':cloudState==='saving'?'☁️…':'☁️✓'}</button><button class="pill gear" data-act="parents" aria-label="Grown-ups corner">⚙️</button></header>`;
 }
 function tabsNav(){
   const due=dueFacts().length;
@@ -925,8 +983,9 @@ function parentsView(){
   <h3 class="sub">Settings</h3><div class="notes">
    <div class="row" style="justify-content:flex-start"><b>Sound</b><button class="chip ${S.settings.sound?'on':''}" data-act="setSound" data-v="1">On</button><button class="chip ${!S.settings.sound?'on':''}" data-act="setSound" data-v="0">Off</button></div>
    <div class="row" style="justify-content:flex-start;margin-top:8px"><b>Break reminder</b>${[0,15,20,30].map(m=>`<button class="chip ${S.settings.breakMins===m?'on':''}" data-act="setBreak" data-m="${m}">${m?m+' min':'Off'}</button>`).join('')}</div>
-   <div class="row" style="justify-content:flex-start;margin-top:8px"><b>Progress</b><button class="chip" data-act="reset">Start over…</button></div>
-   <p class="tiny" style="margin-top:6px">Progress is saved in this browser on this device only.</p></div>
+   <div class="row" style="justify-content:flex-start;margin-top:8px"><b>Cloud save</b><span>${S.cloud?`☁️ saved as <b>${esc(S.name)}</b>`:'📱 this device only'}</span>${S.cloud?'':'<button class="chip" data-act="cloudJoin">Save to cloud</button>'}</div>
+   <div class="row" style="justify-content:flex-start;margin-top:8px"><b>This device</b><button class="chip" data-act="signOut">Sign out</button><button class="chip" data-act="reset">Start over…</button></div>
+   <p class="tiny" style="margin-top:6px">To play on another device, open the game there and type the same name <b>${esc(S.name)}</b>. Anyone who types that name can open this save, so a unique name works best. Sign out keeps the cloud save; Start over erases it on this device and in the cloud.</p></div>
   <h3 class="sub">How the game is designed</h3><div class="notes"><ul style="padding-left:18px;margin:0">
    <li><b>Spaced repetition.</b> Every addition and times-table fact sits in its own memory box. Facts she gets right come back after 1, 2, 4, 7 then 14 days. Facts she misses come back sooner. Due facts are mixed into levels and the Review Garden.</li>
    <li><b>Retrieval and interleaving.</b> She types answers from memory, not just picks them. Older facts are mixed in with new ones, which builds longer-lasting memory than practising one table at a time.</li>
@@ -944,7 +1003,7 @@ function parentsView(){
 /* ---------------- ONBOARDING ---------------- */
 function renderOnboard(){
   setTheme('meadow');const st=UI.onboard,fur=UI.tmpFur||'ginger';
-  if(st===0){app.innerHTML=`<div class="onb">${catHTML(170,'happy',{fur,equipped:{}, cls:'idle'})}<h1 class="title">Whisker Academy</h1><p class="lead">A maths adventure through the Lost Kitty Realms</p><label class="lbl" for="nm">What's your name, Keeper?</label><input id="nm" class="bigin" maxlength="16" autocomplete="off" placeholder="Your name" value="${esc(UI.tmpName||'')}"><button class="btn big" data-act="ob1" data-primary>Next ▶</button></div>`;setTimeout(()=>{const i=$('#nm');i&&i.focus()},50);return}
+  if(st===0){app.innerHTML=`<div class="onb">${catHTML(170,'happy',{fur,equipped:{}, cls:'idle'})}<h1 class="title">Whisker Academy</h1><p class="lead">A maths adventure through the Lost Kitty Realms</p><label class="lbl" for="nm">What's your name, Keeper?</label><input id="nm" class="bigin" maxlength="16" autocomplete="off" placeholder="Your name" value="${esc(UI.tmpName||'')}"><button class="btn big" data-act="ob1" data-primary ${UI.checking?'disabled':''}>${UI.checking?'Looking for your cat… 🔍':'Next ▶'}</button><p class="tiny">Played before? Type the same name to carry on where you left off — on any device!</p>${UI.obErr?`<p class="nudge">${UI.obErr}</p>`:''}</div>`;setTimeout(()=>{const i=$('#nm');i&&i.focus()},50);return}
   if(st===1){app.innerHTML=`<div class="onb"><p class="lead">Every Keeper has a cat companion. Meet yours!</p>${catHTML(170,'normal',{fur,equipped:{},cls:'idle'})}
    <div class="swatches" style="width:100%;max-width:520px">${Object.entries(FURS).filter(([,f])=>!f.price).map(([id,f])=>`<button class="sw ${fur===id?'on':''}" data-act="obfur" data-id="${id}"><span class="dot" style="background:${f.c}"></span>${f.name}</button>`).join('')}</div>
    <label class="lbl" for="cn">What will you name your cat?</label><input id="cn" class="bigin" maxlength="14" autocomplete="off" placeholder="Cat's name" value="${esc(UI.tmpCat||'')}">
@@ -1001,7 +1060,7 @@ function qDisplay(q){
   return `${q.text} = ${slot}`;
 }
 function renderPlay(){
-  const q=P.qs[P.i];
+  const q=P.qs[P.i];if(!q){P=null;UI.screen='home';return render()}
   setTheme(P.r!=null?REALMS[P.r].theme:'home');
   let extra='';
   if(P.boss){const g=REALMS[P.r].guardian;extra=`<div class="bossbar"><div class="gface" id="gface">${P.joy>=P.n?g.after:g.e}</div><div style="flex:1"><div class="gname">${g.name}</div><div class="joy"><i id="joyb" style="width:${Math.min(100,P.joy/P.n*100)}%"></i></div><div class="tiny">Joy meter — every right answer cheers them up!</div></div></div>`}
@@ -1235,6 +1294,32 @@ function closeModal(){const o=$('#overlay');if(o)o.remove()}
 function petCat(el){sfx.meow();const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/3,['💖','💕','✨'],8,90);const b=$('#bubble');if(b)b.textContent=pick(['Purrrrr… 💖','Mrrow! Let’s play!',companionLine(),companionLine()]);const c=el.querySelector('.cat');if(c){c.outerHTML=catHTML(92,'happy',{cls:'bounce'})}setTimeout(()=>{const k=el.querySelector('.cat');if(k&&UI.tab==='map')k.outerHTML=catHTML(92,'normal',{cls:'idle'})},1400)}
 function shakeEl(el){if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')}
 
+/* ---------------- name sign-in ---------------- */
+async function obName(){
+  const inp=$('#nm'),v=inp.value.trim().replace(/\s+/g,' ');
+  if(v.length<2){UI.obErr='Your name needs at least 2 letters.';render();return shakeEl($('#nm'))}
+  UI.tmpName=v.slice(0,16);UI.obErr='';UI.checking=true;render();sfx.tap();
+  let c;
+  try{c=await cloudLoad(UI.tmpName);UI.cloudOk=true}
+  catch(e){UI.checking=false;UI.cloudOk=false;UI.obErr=`Hmm, I can't reach the internet. <br><button class="chip" data-act="ob1" style="margin-top:6px">↻ Try again</button> <button class="chip" data-act="obOffline" style="margin-top:6px">Play offline</button>`;return render()}
+  UI.checking=false;
+  if(c&&c.data&&c.data.v===1&&c.data.name){
+    adopt(c.data,c.saved_at);render();
+    const st=totalStars(),r=rankInfo().name;
+    modal(`<h2>Welcome back, ${esc(S.name)}! 💖</h2>${catHTML(140,'happy',{cls:'bounce'})}<p><b>${esc(catName())}</b> missed you!</p><div class="lcstats"><div><b>⭐ ${st}</b><small>stars</small></div><div><b>🧶 ${S.yarn}</b><small>yarn</small></div></div><p class="tiny">${r}</p><button class="btn big" data-act="obWelcome">Let's play! ▶</button><div style="margin-top:12px"><button class="chip" data-act="obNotMe">That's not me — use a different name</button></div>`);
+    sfx.meow();
+    return;
+  }
+  UI.cloudBase=c?c.saved_at:0;UI.onboard=1;render();
+}
+async function cloudJoin(){
+  closeModal();
+  try{const c=await cloudLoad(S.name);
+    if(c&&c.data&&c.data.v===1){return modal(`<h2>Name already taken</h2><p>Someone already has a cloud save called <b>${esc(S.name)}</b>. Ask a grown-up to pick a different name in the Grown-ups corner.</p><button class="btn" data-act="close">OK</button>`)}
+    S.cloud=true;S.syncedAt=c?c.saved_at:0;save();await cloudPush();render();toast('<span class="ti">☁️</span><div><b>Saved to the cloud!</b><br>Type your name on any device to play.</div>');
+  }catch(e){toast('<span class="ti">☁️</span><div>No internet right now. Try again later.</div>')}
+}
+
 /* ---------------- actions ---------------- */
 const ACT={
   tab:d=>{UI.tab=d.tab;UI.screen='home';sfx.tap();render();scrollTo(0,0)},
@@ -1276,12 +1361,18 @@ const ACT={
   parents:()=>parentGate(),
   setSound:d=>{S.settings.sound=d.v==='1';save();render()},
   setBreak:d=>{S.settings.breakMins=Number(d.m);save();render()},
-  reset:()=>{if(confirm('Erase ALL progress, stars, stickers and drawings?')&&confirm('Are you really sure? This cannot be undone.')){localStorage.removeItem(SAVE_KEY);location.reload()}},
-  ob1:()=>{const v=$('#nm').value.trim();if(!v)return shakeEl($('#nm'));UI.tmpName=v.slice(0,16);UI.onboard=1;sfx.tap();render()},
+  reset:async()=>{if(confirm('Erase ALL progress, stars, stickers and drawings?')&&confirm('Are you really sure? This cannot be undone.')){const n=S.name,wasCloud=S.cloud;clearTimeout(cloudTimer);if(wasCloud){try{await rpc('wa_save',{p_name:n,p_data:{v:0,reset:true},p_saved_at:Date.now()+1,p_base:9e15})}catch(e){}}S={};localStorage.removeItem(SAVE_KEY);location.reload()}},
+  signOut:async()=>{if(!confirm(S.cloud?`Sign out on this device? Progress stays saved in the cloud — type "${S.name}" to come back.`:'This save is NOT in the cloud. Signing out will erase it from this device. Continue?'))return;clearTimeout(cloudTimer);if(S.cloud){try{await cloudPush()}catch(e){}}localStorage.removeItem(SAVE_KEY);location.reload()},
+  ob1:()=>obName(),
+  obWelcome:()=>{closeModal();sfx.fanfare();confetti(50);UI.tab='map';const cur=REALMS.findIndex((_,i)=>realmUnlocked(i)&&currentLevel(i)>=0);if(cur>=0)UI.realm=cur;render();setTimeout(checkDaily,600)},
+  obNotMe:()=>{closeModal();S=defaults();try{localStorage.removeItem(SAVE_KEY)}catch(e){}UI.tmpName='';UI.onboard=0;render()},
+  obOffline:()=>{UI.obErr='';UI.onboard=1;render()},
+  cloudInfo:()=>{if(!S.cloud)return modal(`<h2>Saved on this device 📱</h2><p>This game was started before cloud saves existed, so it only lives on this device.</p><button class="btn mint" data-act="cloudJoin">☁️ Save it to the cloud</button><div class="row" style="margin-top:10px"><button class="chip" data-act="close">Not now</button></div>`);modal(`<h2>${cloudState==='off'?'Offline for now ☁️✕':'Saved to the cloud ☁️✓'}</h2><p>${cloudState==='off'?'No internet right now — your progress is safe on this device and will upload by itself when you’re back online.':`Your progress is saved under the name <b>${esc(S.name)}</b>.`}</p><p class="tiny">On another phone, tablet or computer, open the game and type <b>${esc(S.name)}</b> as your name to carry on.</p><button class="btn" data-act="close" style="margin-top:8px">OK</button>`)},
+  cloudJoin:()=>cloudJoin(),
   obfur:d=>{const c=$('#cn');if(c)UI.tmpCat=c.value;UI.tmpFur=d.id;sfx.meow();render()},
   obname:d=>{UI.tmpCat=d.n;const c=$('#cn');if(c)c.value=d.n;sfx.tap()},
   ob2:()=>{const v=$('#cn').value.trim();if(!v)return shakeEl($('#cn'));UI.tmpCat=v.slice(0,14);UI.onboard=2;sfx.tap();render()},
-  obgo:()=>{S.name=UI.tmpName;S.catName=UI.tmpCat;S.fur=UI.tmpFur||'ginger';save();UI.tab='map';sfx.fanfare();render();setTimeout(checkDaily,500)}
+  obgo:()=>{S.name=UI.tmpName;S.catName=UI.tmpCat;S.fur=UI.tmpFur||'ginger';S.cloud=UI.cloudOk!==false;S.syncedAt=UI.cloudBase||0;save();cloudPush();UI.tab='map';sfx.fanfare();render();setTimeout(checkDaily,500)}
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.disabled)return;const fn=ACT[el.dataset.act];if(fn)fn(el.dataset,el,e)});
 document.addEventListener('keydown',e=>{
@@ -1292,12 +1383,12 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Backspace'){e.preventDefault();press('del')}
   else if(e.key==='Enter'){e.preventDefault();if(P.explaining)ACT.gotit();else press('ok')}
 });
-setInterval(()=>{if(!document.hidden&&S.name){S.stats.seconds+=10;save()}},10000);
+setInterval(()=>{if(!document.hidden&&S.name){S.stats.seconds+=10;persistLocal()}},10000);
 
 /* ---------------- go! ---------------- */
 (function boot(){
   const cur=REALMS.findIndex((_,i)=>realmUnlocked(i)&&currentLevel(i)>=0);if(cur>=0)UI.realm=cur;
-  render();if(S.name)setTimeout(checkDaily,500);
+  render();if(S.name){setTimeout(checkDaily,500);cloudSync()}
 })();
 </script>
 </body>

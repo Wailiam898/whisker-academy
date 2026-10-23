@@ -198,6 +198,25 @@ body.dark .realm-track{color:#ffd36b}
 .word{font-size:21px;font-weight:600;line-height:1.3}
 .qtext{font-size:clamp(42px,11vw,62px);font-weight:800;line-height:1.05;white-space:nowrap}
 .wordans{font-size:30px}
+.qtext.long{font-size:clamp(26px,7.5vw,40px);white-space:normal;line-height:1.25}
+.grps{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:420px}
+.g1{border:3px dashed #e3d3f0;border-radius:16px;padding:4px 6px;font-size:20px;line-height:1.1;max-width:120px;word-break:break-all;background:#fffafd}
+.area{display:flex;width:min(320px,90%);height:74px;border:3px solid var(--ink);border-radius:12px;overflow:hidden}
+.ar{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#ffe1ef;font-size:17px;min-width:84px;line-height:1.15}
+.ar.o{background:#d9f6ea;border-left:3px solid var(--ink)}
+.ar span{font-size:20px;font-weight:800;color:var(--mint-d)}
+.crystals{background:rgba(255,255,255,.88);border-radius:16px;padding:8px 10px;margin-top:8px}
+.crhead{display:flex;justify-content:space-between;font-weight:800;font-size:15px;margin-bottom:4px}
+.crhead span{color:var(--muted);font-size:13px}
+.gems{display:grid;grid-template-columns:repeat(11,1fr);gap:3px}
+.gem{display:flex;flex-direction:column;align-items:center;font-size:11px;font-weight:800;padding:4px 0 2px;border-radius:10px;min-height:46px;color:var(--ink)}
+.gem span{font-size:21px;line-height:1.1;filter:grayscale(1) opacity(.3)}
+.gem.l1 span{filter:grayscale(.6) opacity(.6)}
+.gem.l2 span{filter:none}
+.gem.l3{background:#e7f4ff;box-shadow:0 0 0 2px #9fd6ff}
+.gem.l3 span{filter:drop-shadow(0 0 5px #48b4ff);animation:twinkle 2.4s ease-in-out infinite}
+@keyframes twinkle{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.bonus-tag{display:inline-block;background:#fff3c4;color:#8a6200;border-radius:99px;padding:0 8px;font-size:12px;margin-left:4px}
 .ans{display:inline-block;min-width:1.5em;padding:0 .18em;border-radius:16px;background:#fff0f7;color:var(--pink-d);border:3px dashed #ffb7d6}
 .ans.reveal{background:#e3f8ef;border-color:#9fe3c8;color:var(--mint-d)}
 .ans.right{background:#e3f8ef;border:3px solid var(--mint);color:var(--mint-d)}
@@ -421,17 +440,17 @@ const DRAW_CHALLENGES=[
 
 /* ---------------- save state ---------------- */
 function defaults(){return{
-  v:1,name:'',catName:'',fur:'ginger',
+  v:1,mapV:2,name:'',catName:'',fur:'ginger',
   equipped:{head:null,face:null,neck:null,back:null},
   owned:['fur_ginger','fur_snow','fur_grey','fur_midnight','fur_cream'],
-  yarn:20,stars:{},stickers:{},drawings:[],facts:{},badges:[],
+  yarn:20,stars:{},stickers:{},drawings:[],fullTables:[],facts:{},badges:[],
   streak:{count:0,last:null},giftDay:null,drawDay:null,challengeDay:null,
   stats:{answered:0,firstTry:0,seconds:0,levels:0,bestCombo:0,lightningBest:0},
   settings:{sound:true,breakMins:20}
 }}
 function load(){
   try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));
-    if(s&&s.v===1){const d=defaults();return Object.assign(d,s,{stats:Object.assign(d.stats,s.stats),settings:Object.assign(d.settings,s.settings),equipped:Object.assign(d.equipped,s.equipped)})}}
+    if(s&&s.v===1){migrateMap(s);const d=defaults();return Object.assign(d,s,{stats:Object.assign(d.stats,s.stats),settings:Object.assign(d.settings,s.settings),equipped:Object.assign(d.equipped,s.equipped)})}}
   catch(e){}
   return defaults();
 }
@@ -450,10 +469,11 @@ async function rpc(fn,body){
 function cloudLoad(name){return rpc('wa_load',{p_name:name})}
 function cloudQueue(){if(!cloudOn())return;clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudPush,1500)}
 function mergeFrom(c){ // combine progress from two devices: nothing earned on either is lost
+  migrateMap(c);
   const mx=(a,b)=>{const o=Object.assign({},a);for(const k in b)o[k]=Math.max(o[k]||0,b[k]||0);return o};
   S.stars=mx(S.stars,c.stars);S.stickers=mx(S.stickers,c.stickers);
   const f=Object.assign({},c.facts);for(const k in S.facts){if(!f[k]||(S.facts[k].seen||0)>=(f[k].seen||0))f[k]=S.facts[k]}S.facts=f;
-  S.owned=[...new Set([...(S.owned||[]),...(c.owned||[])])];S.badges=[...new Set([...(S.badges||[]),...(c.badges||[])])];
+  S.fullTables=[...new Set([...(S.fullTables||[]),...(c.fullTables||[])])];S.owned=[...new Set([...(S.owned||[]),...(c.owned||[])])];S.badges=[...new Set([...(S.badges||[]),...(c.badges||[])])];
   const seen=new Set(S.drawings.map(d=>d.img));S.drawings=S.drawings.concat((c.drawings||[]).filter(d=>!seen.has(d.img))).slice(0,40);
   S.stats=mx(S.stats,c.stats);
   if(c.streak&&(c.streak.count||0)>(S.streak.count||0))S.streak=c.streak;
@@ -481,7 +501,7 @@ async function cloudPush(){
   cloudBusy=false;if(cloudAgain){cloudAgain=false;cloudQueue()}
 }
 function adopt(data,at){
-  const d=defaults();
+  migrateMap(data);const d=defaults();
   S=Object.assign(d,data,{stats:Object.assign(d.stats,data.stats),settings:Object.assign(d.settings,data.settings),equipped:Object.assign(d.equipped,data.equipped)});
   S.cloud=true;S.savedAt=at||S.savedAt;S.syncedAt=at||S.savedAt;S.baseYarn=S.yarn;persistLocal();
 }
@@ -557,6 +577,12 @@ function missingAddQ(a,total){const b=total-a;return{op:'+',a,b,ans:b,missing:tr
 function missingMulQ(a,b){return{op:'×',a,b,ans:b,missing:true,text:`${a} × ? = ${a*b}`,mtext:`${a} × □ = ${a*b}`,key:fk('m',a,b)}}
 function add3Q(){const x=rnd(1,9),y=10-x,z=rnd(2,9);const nums=shuffle([x,y,z]);return{op:'+3',nums,ans:x+y+z,text:nums.join(' + '),key:null,pair:[x,y],z}}
 function catName(){return S.catName||'Mochi'}
+const GROUP_THEMES=[['🐟','fish','bowls'],['🐱','kittens','baskets'],['⭐','stars','clouds'],['🧶','yarn balls','boxes'],['🌸','flowers','pots'],['💎','crystals','caves']];
+function groupsQ(g,n){const [e,thing,box]=pick(GROUP_THEMES);return{op:'×',a:g,b:n,ans:g*n,kind:'groups',emo:e,text:`${g} groups of ${n}`,disp:`${g} ${box} of ${n} ${thing} = □`,long:true,key:fk('m',g,n)}}
+function skipQ(t){const k=rnd(4,7);let pos=k;if(Math.random()<.35)pos=rnd(2,k-1);const seq=range(1,k).map(i=>i===pos?'□':String(i*t));return{op:'×',a:t,b:pos,ans:t*pos,kind:'skip',text:`Count by ${t}s: ${seq.join(', ').replace('□','?')}`,disp:`Count by ${t}s:<br>${seq.join(', ')}`,long:true,key:fk('m',t,pos)}}
+function turnQ(a,b){return{op:'×',a:b,b:a,ans:a*b,kind:'turn',text:`${a} × ${b} = ${a*b}, so ${b} × ${a}`,disp:`${a} × ${b} = ${a*b}<br>so ${b} × ${a} = □`,long:true,key:fk('m',a,b)}}
+function tensQ(){const o=rnd(2,9),T=rnd(2,9)*10;const sw=Math.random()<.5;const a=sw?T:o,b=sw?o:T;return{op:'×',a,b,ans:o*T,kind:'tens',text:`${a} × ${b}`,key:null}}
+function splitQ(lo,hi,mlo,mhi){let a=rnd(lo,hi);if(a%10===0)a++;const m=rnd(mlo,mhi);return{op:'×',a,b:m,ans:a*m,kind:'split',text:`${a} × ${m}`,key:null}}
 function wordAddQ(big){
   const q=big?G.d2d2():G.add20();const {a,b}=q,c=catName();
   q.word=pick([`${c} read ${a} pages of a magic book, then ${b} more pages. How many pages did ${c} read?`,
@@ -592,71 +618,82 @@ const G={
   miss:t=>()=>missingMulQ(pick(t),rnd(2,12)),
   wAdd:big=>()=>wordAddQ(big),
   wMul:t=>()=>wordMulQ(t),
-  mix:(...fs)=>()=>pick(fs)()
+  mix:(...fs)=>()=>pick(fs)(),
+  groups:(gmax,nmax)=>()=>groupsQ(rnd(2,gmax),rnd(2,nmax)),
+  skip:t=>()=>skipQ(pick(t)),
+  turn:t=>()=>turnQ(pick(t),rnd(2,12)),
+  tens:()=>()=>tensQ(),
+  split:(lo,hi,mlo,mhi)=>()=>splitQ(lo,hi,mlo,mhi)
 };
+G.square=(lo=2,hi=12)=>()=>{const a=rnd(lo,hi);const q=mulQ(a,a);q.kind='square';return q};
+const ALL=range(2,12);
 
 /* ---------------- realms (the level map) ---------------- */
 const REALMS=[
- {id:'meadow',name:'Whisker Meadow',icon:'🌸',theme:'meadow',requires:[],track:'Addition',
-  intro:'Sleepy kittens, soft grass… and one very grumpy raincloud.',
+ {id:'cloud',name:'Cloud Castle',icon:'☁️',theme:'cloud',requires:[],track:'Times tables · ×2 ×5 ×10',
+  intro:'A castle floating in the sky. Learn what × really means, then master the 2, 5 and 10 times tables!',
+  guardian:{name:'Thunderpuff',e:'⛈️',after:'☀️',line:'Rumble rumble! My clouds are all muddled up!',thanks:'The sun is shining on Cloud Castle again!'},
+  levels:[
+   {name:'Groups Of',gen:G.groups(5,5),mc:true,visual:true},
+   {name:'Pairs of Paws',gen:G.mul([2],1,10),mc:true,visual:true},
+   {name:'Tens Tower',gen:G.mul([10],1,12),mc:true},
+   {name:'High Fives',gen:G.mul([5]),visual:true},
+   {name:'Skip-Count Clouds',gen:G.skip([2,5,10])},
+   {name:'Sky Mix',gen:G.mix(G.mul([2,5,10]),G.mul([2,5,10]),G.miss([2,5,10]),G.turn([2,5,10]))},
+   {name:'Thunderpuff',boss:true,gen:G.mix(G.mul([2,5,10]),G.mul([2,5,10]),G.miss([2,5,10]),G.skip([2,5,10]),G.wMul([2,5,10]))}]},
+ {id:'moon',name:'Moonlit Forest',icon:'🌙',theme:'moon',requires:['cloud'],track:'Times tables · ×3 ×4 ×6',
+  intro:'Glow-mushrooms and fireflies. The 3, 4 and 6 times tables hide among the trees.',
+  guardian:{name:'The Sleepy Moon',e:'🌑',after:'🌕',line:'The moon has gone dark… only multiplication can make it glow.',thanks:'The full moon glows over the forest again!'},
+  levels:[
+   {name:'Firefly Threes',gen:G.mul([3],1,10),mc:true,visual:true},
+   {name:'Four-Paw Path',gen:G.mul([4]),visual:true},
+   {name:'Mushroom Sixes',gen:G.mul([6])},
+   {name:'Firefly Counting',gen:G.skip([3,4,6])},
+   {name:'Hidden Numbers',gen:G.mix(G.miss([3,4,6]),G.mul([3,4,6]))},
+   {name:'Forest Mix',gen:G.mix(G.mul([3,4,6]),G.mul([3,4,6]),G.mul([2,5,10]),G.turn([3,4,6]))},
+   {name:'Sleepy Moon',boss:true,gen:G.mix(G.mul([3,4,6]),G.mul([3,4,6]),G.mul([2,5,10]),G.miss([3,4,6]),G.wMul([3,4,6]))}]},
+ {id:'star',name:'Starfall Observatory',icon:'🔭',theme:'star',requires:['moon'],track:'Times tables · ×7 ×8 ×9',
+  intro:'A tower of telescopes. The trickiest tables, 7, 8 and 9, live up here, along with the square numbers.',
+  guardian:{name:'Comet Gremlin',e:'☄️',after:'🌠',line:'Hee hee! I scrambled all the stars!',thanks:'The stars are back in their places!'},
+  levels:[
+   {name:'Nifty Nines',gen:G.mul([9]),mc:true},
+   {name:'Eight Legs',gen:G.mul([8])},
+   {name:'Lucky Sevens',gen:G.mul([7]),visual:true},
+   {name:'Square Stars',gen:G.square(2,12),visual:true},
+   {name:'Flip & Find',gen:G.mix(G.turn([7,8,9]),G.miss([7,8,9]),G.miss([6,7,8,9]))},
+   {name:'Star Mix',gen:G.mix(G.mul([7,8,9]),G.mul([7,8,9]),G.mul([3,4,6]))},
+   {name:'Comet Gremlin',boss:true,gen:G.mix(G.mul([6,7,8,9]),G.mul([6,7,8,9]),G.miss([6,7,8,9]),G.skip([7,8,9]),G.wMul([6,7,8,9]))}]},
+ {id:'library',name:'Crystal Library',icon:'📚',theme:'library',requires:['star'],track:'Times tables · ×11 ×12 & big numbers',
+  intro:'Endless shelves of glowing spell books, where the 11 and 12 times tables and BIG multiplications are kept.',
+  guardian:{name:'Professor Snoozle',e:'😴',after:'🦉',line:'Zzz… only really big multiplications can wake me up… zzz…',thanks:'Professor Snoozle woke up and gave you a gold star!'},
+  levels:[
+   {name:'Elevens & Twelves',gen:G.mul([11,12]),mc:true},
+   {name:'Tens Times',gen:G.tens()},
+   {name:'Split & Multiply',gen:G.split(11,19,2,5)},
+   {name:'Bigger Splits',gen:G.split(13,49,2,9)},
+   {name:'Story Scrolls',gen:G.wMul(ALL)},
+   {name:'Snoozle',boss:true,gen:G.mix(G.mul([11,12]),G.tens(),G.split(12,39,2,6),G.wMul([6,7,8,9,12]))}]},
+ {id:'lumen',name:'Lost City of Lumenaria',icon:'✨',theme:'lumen',requires:['library'],track:'Every times table',
+  intro:'The legendary hidden city! Only a true Keeper of Numbers who knows every times table can find it.',
+  guardian:{name:'The Fog Dragon',e:'🐉',after:'🐲',line:'Who dares enter the Lost City of Lumenaria?',thanks:'The Fog Dragon is your friend now. Lumenaria shines again!'},
+  levels:[
+   {name:'Mixed Magic',gen:G.mul(ALL)},
+   {name:'Missing Pieces',gen:G.miss([3,4,6,7,8,9,12])},
+   {name:'Square Dance',gen:G.mix(G.square(4,12),G.turn([6,7,8,9]))},
+   {name:'Story Scrolls',gen:G.mix(G.wMul(ALL),G.groups(6,9))},
+   {name:'Big & Bold',gen:G.mix(G.split(13,49,3,9),G.tens(),G.mul([7,8,9,12]))},
+   {name:'Fog Dragon',boss:true,n:12,gen:G.mix(G.mul([6,7,8,9,12]),G.mul([6,7,8,9,12]),G.miss([4,6,7,8,9]),G.split(12,39,3,8),G.wMul([3,4,6,7,8,9]))}]},
+ {id:'meadow',name:'Whisker Meadow',icon:'🌸',theme:'meadow',requires:[],track:'Bonus realm · Addition',bonus:true,
+  intro:'A bonus realm! Sleepy kittens, soft grass… and one very grumpy raincloud who loves adding.',
   guardian:{name:'Grumbles the Raincloud',e:'🌧️',after:'🌈',line:'Hmph! Nobody can cheer ME up… unless you can add?',thanks:'The rain stopped and a rainbow popped out over the meadow!'},
   levels:[
    {name:'Kitten Count',gen:G.add10,mc:true,visual:true},
    {name:'Friends of 10',gen:G.mix(G.bond10,G.bridge10),mc:true,visual:true},
    {name:'Up to 20',gen:G.add20},
    {name:'Double Trouble',gen:G.doubles},
-   {name:'Three Kittens',gen:G.add3},
-   {name:'Grumbles',boss:true,gen:G.mix(G.add20,G.bridge10,G.doubles,G.missAdd20,G.wAdd(false))}]},
- {id:'cloud',name:'Cloud Castle',icon:'☁️',theme:'cloud',requires:[],track:'Times tables',
-  intro:'A castle floating in the sky, where the 2, 5 and 10 times tables live.',
-  guardian:{name:'Thunderpuff',e:'⛈️',after:'☀️',line:'Rumble rumble! My clouds are all muddled up!',thanks:'The sun is shining on Cloud Castle again!'},
-  levels:[
-   {name:'Pairs of Paws',gen:G.mul([2],1,10),mc:true,visual:true},
-   {name:'Tens Tower',gen:G.mul([10],1,12),mc:true},
-   {name:'High Fives',gen:G.mul([5])},
-   {name:'Sky Mix',gen:G.mul([2,5,10])},
-   {name:'Missing Clouds',gen:G.mix(G.miss([2,5,10]),G.mul([2,5,10]))},
-   {name:'Thunderpuff',boss:true,gen:G.mix(G.mul([2,5,10]),G.mul([2,5,10]),G.miss([2,5,10]),G.wMul([2,5,10]))}]},
- {id:'library',name:'Crystal Library',icon:'📚',theme:'library',requires:['meadow'],track:'Addition',
-  intro:'Endless shelves of glowing books. Big sums keep the crystals bright.',
-  guardian:{name:'Professor Snoozle',e:'😴',after:'🦉',line:'Zzz… only really big sums can wake me up… zzz…',thanks:'Professor Snoozle woke up and gave you a gold star!'},
-  levels:[
-   {name:'Counting in Tens',gen:G.tens,mc:true,visual:true},
-   {name:'Little Leaps',gen:G.d2d1},
-   {name:'Leap Over Ten',gen:G.d2d1r},
-   {name:'Big Book Sums',gen:G.d2d2},
+   {name:'Big Book Sums',gen:G.mix(G.d2d1r,G.d2d2)},
    {name:'Crystal Carry',gen:G.d2d2r},
-   {name:'Snoozle',boss:true,gen:G.mix(G.d2d1r,G.d2d2,G.d2d2r,G.wAdd(true))}]},
- {id:'moon',name:'Moonlit Forest',icon:'🌙',theme:'moon',requires:['cloud'],track:'Times tables',
-  intro:'Glow-mushrooms and fireflies. The 3, 4 and 6 times tables hide among the trees.',
-  guardian:{name:'The Sleepy Moon',e:'🌑',after:'🌕',line:'The moon has gone dark… only multiplication can make it glow.',thanks:'The full moon glows over the forest again!'},
-  levels:[
-   {name:'Firefly Threes',gen:G.mul([3],1,10),mc:true,visual:true},
-   {name:'Four-Paw Path',gen:G.mul([4])},
-   {name:'Mushroom Sixes',gen:G.mul([6])},
-   {name:'Forest Mix',gen:G.mix(G.mul([3,4,6]),G.mul([3,4,6]),G.mul([2,5,10]))},
-   {name:'Hidden Numbers',gen:G.mix(G.miss([3,4,6]),G.mul([3,4,6]))},
-   {name:'Sleepy Moon',boss:true,gen:G.mix(G.mul([3,4,6]),G.mul([3,4,6]),G.mul([2,5,10]),G.miss([3,4,6]),G.wMul([3,4,6]))}]},
- {id:'star',name:'Starfall Observatory',icon:'🔭',theme:'star',requires:['moon'],track:'Times tables',
-  intro:'A tower of telescopes. The trickiest tables — 7, 8, 9, 11 and 12 — live up here.',
-  guardian:{name:'Comet Gremlin',e:'☄️',after:'🌠',line:'Hee hee! I scrambled all the stars!',thanks:'The stars are back in their places!'},
-  levels:[
-   {name:'Nifty Nines',gen:G.mul([9]),mc:true},
-   {name:'Eight Legs',gen:G.mul([8])},
-   {name:'Lucky Sevens',gen:G.mul([7])},
-   {name:'Star Mix',gen:G.mix(G.mul([7,8,9]),G.mul([7,8,9]),G.mul([3,4,6]))},
-   {name:'Elevens & Twelves',gen:G.mul([11,12])},
-   {name:'Comet Gremlin',boss:true,gen:G.mix(G.mul([6,7,8,9]),G.mul([6,7,8,9]),G.mul([11,12]),G.miss([6,7,8,9]),G.wMul([6,7,8,9]))}]},
- {id:'lumen',name:'Lost City of Lumenaria',icon:'✨',theme:'lumen',requires:['library','star'],track:'Everything',
-  intro:'The legendary hidden city! Only a true Keeper of Numbers can find it.',
-  guardian:{name:'The Fog Dragon',e:'🐉',after:'🐲',line:'Who dares enter the Lost City of Lumenaria?',thanks:'The Fog Dragon is your friend now — Lumenaria shines again!'},
-  levels:[
-   {name:'Mixed Magic',gen:G.mix(G.add20,G.d2d1r,G.mul([2,3,4,5,6,7,8,9,10]))},
-   {name:'Missing Pieces',gen:G.mix(G.miss([3,4,6,7,8,9]),G.missAdd20)},
-   {name:'Story Scrolls',gen:G.mix(G.wMul([2,3,4,5,6,7,8,9]),G.wAdd(true),G.wAdd(false))},
-   {name:'Big & Bold',gen:G.mix(G.d2d2r,G.mul([6,7,8,9,11,12]))},
-   {name:'Every Table',gen:G.mul([2,3,4,5,6,7,8,9,10,11,12])},
-   {name:'Fog Dragon',boss:true,n:12,gen:G.mix(G.d2d2r,G.mul([6,7,8,9,12]),G.miss([4,6,7,8,9]),G.wMul([3,4,6,7,8,9]),G.wAdd(true))}]}
+   {name:'Grumbles',boss:true,gen:G.mix(G.add20,G.d2d1r,G.d2d2r,G.missAdd20,G.wAdd(true))}]}
 ];
 const THEMES={
   home:['linear-gradient(180deg,#ffe4f1,#fff8ef)',0],
@@ -670,6 +707,8 @@ const THEMES={
 const BADGES={
   first:['🐾','First Paw','Finish your first level'],
   perfect:['💯','Purr-fect','Get ★★★ on a level'],
+  table:['💎','Table Master','Make a times-table crystal fully glow'],
+  allCrystals:['👑','Crystal Champion','Light up all 11 times-table crystals'],
   combo5:['🔥','On Fire','5 right in a row'],
   combo10:['⚡','Unstoppable','10 right in a row'],
   comeback:['💪','Comeback Kid','Fix a mistake, then get 3 in a row'],
@@ -684,9 +723,24 @@ const BADGES={
 };
 REALMS.forEach(R=>{BADGES['r_'+R.id]=[R.guardian.after,R.name+' Hero','Cheer up '+R.guardian.name]});
 
+/* ---------------- save migration: map v1 → v2 (multiplication-first) ---------------- */
+function migrateMap(x){
+  if(!x||x.v!==1||x.mapV===2)return x;
+  const o=x.stars||{},n={},g=(id,i)=>o[id+'-'+i]||0;
+  const put=(id,i,v)=>{if(v)n[id+'-'+i]=Math.max(n[id+'-'+i]||0,v)};
+  if(g('cloud',0))put('cloud',0,g('cloud',0));
+  for(let i=0;i<5;i++)put('cloud',i+1,g('cloud',i));put('cloud',6,g('cloud',5));
+  for(const i of[0,1,2])put('moon',i,g('moon',i));put('moon',4,g('moon',4));put('moon',5,g('moon',3));if(g('moon',4))put('moon',3,g('moon',4));put('moon',6,g('moon',5));
+  for(const i of[0,1,2])put('star',i,g('star',i));put('star',5,g('star',3));if(g('star',3)){put('star',3,g('star',3));put('star',4,g('star',3))}put('star',6,g('star',5));put('library',0,g('star',4));
+  for(const i of[0,1,2,3])put('meadow',i,g('meadow',i));put('meadow',4,g('library',3)||g('meadow',4));put('meadow',5,g('library',4));put('meadow',6,g('meadow',5));
+  for(let i=0;i<6&&g('lumen',i);i++)put('lumen',i,g('lumen',i));
+  for(const id of['cloud','moon','star','meadow']){let last=0;for(let i=6;i>=0;i--){if(n[id+'-'+i])last=1;else if(last)n[id+'-'+i]=1}}
+  x.stars=n;x.mapV=2;return x;
+}
+
 /* ---------------- progress helpers ---------------- */
 const lid=(r,l)=>REALMS[r].id+'-'+l;
-const totalStars=()=>Object.values(S.stars).reduce((a,b)=>a+b,0);
+const totalStars=()=>REALMS.reduce((t,R,ri)=>t+R.levels.reduce((u,_,li)=>u+(S.stars[lid(ri,li)]||0),0),0);
 function realmUnlocked(r){return REALMS[r].requires.every(id=>{const i=REALMS.findIndex(x=>x.id===id);return !!S.stars[lid(i,REALMS[i].levels.length-1)]})}
 function levelUnlocked(r,l){return realmUnlocked(r)&&(l===0||!!S.stars[lid(r,l-1)])}
 function currentLevel(r){const R=REALMS[r];for(let i=0;i<R.levels.length;i++){if(!S.stars[lid(r,i)])return levelUnlocked(r,i)?i:-1}return -1}
@@ -707,13 +761,37 @@ function dueFacts(){const t=dayKey();return Object.entries(S.facts).filter(([,f]
 function weakFacts(){return Object.entries(S.facts).sort((a,b)=>(a[1].box-b[1].box)||(b[1].wrong-a[1].wrong)).map(e=>e[0])}
 function factToQ(k){const [a,b]=k.slice(1).split('_').map(Number);return k[0]==='m'?mulQ(a,b):addQ(a,b)}
 function factLabel(k){const [a,b]=k.slice(1).split('_').map(Number);return k[0]==='m'?`${a} × ${b}`:`${a} + ${b}`}
+function crystalLvl(t){let s=0;for(const m of range(1,12)){const f=S.facts[fk('m',t,m)];if(f)s+=Math.min(f.box,3)/3}return s/12}
+function crystalsHTML(){
+  const lv=ALL.map(t=>{const p=crystalLvl(t);return{t,l:p>=1?3:p>=.5?2:p>0?1:0}});const full=lv.filter(x=>x.l===3).length;
+  return `<div class="crystals"><div class="crhead">💎 Times Table Crystals <span>${full}/11 fully glowing</span></div><div class="gems">${lv.map(({t,l})=>`<button class="gem l${l}" data-act="table" data-t="${t}" aria-label="Train the ${t} times table">${'<span>💎</span>'}×${t}</button>`).join('')}</div></div>`;
+}
+function checkCrystals(q){
+  if(!q||!q.key||q.key[0]!=='m')return;
+  for(const t of new Set([q.a,q.b])){if(t<2||t>12||S.fullTables.includes(t))continue;
+    if(crystalLvl(t)>=1){S.fullTables.push(t);badge('table');setTimeout(()=>{toast(`<span class="ti">💎</span><div><b>The ×${t} crystal is fully glowing!</b><br>You've mastered the ${t} times table!</div>`);sfx.fanfare();confetti(50)},900)}}
+  if(S.fullTables.length>=11)badge('allCrystals');
+}
 function tableStrong(t){return range(1,12).filter(m=>{const f=S.facts[fk('m',t,m)];return f&&f.box>=3}).length}
 
 /* ---------------- teaching: hints, strategies, pictures ---------------- */
 function tip(q,full){
   if(q.op==='+3'){const [x,y]=q.pair;return full?`${x} + ${y} = 10, then 10 + ${q.z} = ${q.ans}.`:`Find two numbers that make 10 first — then add the last one!`}
   if(q.op==='×'){
+    const A=q.ans;
+    if(q.kind==='groups')return full?`${q.a} groups of ${q.b} is ${Array(q.a).fill(q.b).join(' + ')} = ${A}. That's ${q.a} × ${q.b}!`:`Add ${q.b} again and again, ${q.a} times: ${Array(q.a).fill(q.b).join(' + ')}`;
+    if(q.kind==='skip')return full?`Counting by ${q.a}s: ${range(1,q.b).map(i=>i*q.a).join(', ')}. That's ${q.b} × ${q.a} = ${A}.`:(q.b>1?`Each number is ${q.a} more than the one before. Try ${(q.b-1)*q.a} + ${q.a}.`:`Start at ${q.a}!`);
+    if(q.kind==='turn')return full?`Swapping the numbers gives the same answer, so ${q.a} × ${q.b} = ${A} too.`:`Turnaround trick: swapping the numbers doesn't change the answer!`;
+    if(q.kind==='tens'){const T=q.a%10===0?q.a:q.b,o=T===q.a?q.b:q.a;return full?`${o} × ${T/10} = ${o*T/10}. Make it 10 times bigger: ${A}.`:`${T} is ${T/10} tens. Do ${o} × ${T/10} first, then make it 10 times bigger.`}
+    if(q.kind==='split'){const t=q.a-q.a%10,o=q.a%10,m=q.b;return full?`${t} × ${m} = ${t*m} and ${o} × ${m} = ${o*m}. ${t*m} + ${o*m} = ${A}.`:`Split ${q.a} into ${t} + ${o}. Do ${t} × ${m} and ${o} × ${m}, then add them.`}
+    if(q.kind==='square'&&!full)return `A square number: ${q.a} rows of ${q.a}. `+tipCore(q,false);
     if(q.missing){const c=q.a*q.b;return full?`${q.a} × ${q.b} = ${c}, so the missing number is ${q.b}.`:`Count up in ${q.a}s until you reach ${c}. How many jumps did you make?`}
+    return tipCore(q,full);
+  }
+  return tipAdd(q,full);
+}
+function tipCore(q,full){
+  {
     const order=[1,10,2,5,11,9,4,3,6,8,12,7];const t=order.find(x=>x===q.a||x===q.b);const m=t===q.a?q.b:q.a;const A=q.ans;
     switch(t){
       case 1:return `Anything × 1 stays the same!${full?` So it's ${A}.`:''}`;
@@ -729,7 +807,10 @@ function tip(q,full){
       case 12:return full?`10 × ${m} = ${10*m}, plus 2 × ${m} = ${2*m} → ${A}.`:`10 × ${m} = ${10*m}. Now add 2 × ${m} = ${2*m}.`;
       case 7:return full?`5 × ${m} = ${5*m}, plus 2 × ${m} = ${2*m} → ${A}.`:`Split 7 into 5 + 2: 5 × ${m} = ${5*m} and 2 × ${m} = ${2*m}.`;
     }
+    return full?`${q.a} × ${q.b} = ${A}.`:`Try counting in ${q.a}s.`;
   }
+}
+function tipAdd(q,full){
   const {a,b}=q,s=a+b;
   if(q.missing)return full?`${a} + ${b} = ${s}, so the missing number is ${b}.`:`Start at ${a} and count up to ${s}. How many jumps?`;
   const big=Math.max(a,b),small=Math.min(a,b);
@@ -746,10 +827,14 @@ function tip(q,full){
 }
 function visual(q,reveal){
   if(q.op==='×'){
+    if(q.kind==='groups')return `<div class="vis"><div class="grps">${range(1,q.a).map(()=>`<div class="g1">${q.emo.repeat(q.b)}</div>`).join('')}</div><div class="cap">${q.a} groups of ${q.b} → ${q.a} × ${q.b}</div></div>`;
+    if(q.kind==='split'){const t=q.a-q.a%10,o=q.a%10,m=q.b;return `<div class="vis"><div class="area"><div class="ar" style="flex:${t}"><b>${t} × ${m}</b>${reveal?`<span>= ${t*m}</span>`:''}</div><div class="ar o" style="flex:${Math.max(o,3)}"><b>${o} × ${m}</b>${reveal?`<span>= ${o*m}</span>`:''}</div></div><div class="cap">${q.a} = ${t} + ${o}</div></div>`}
+    if(q.kind==='tens'||q.kind==='skip')return '';
     if(q.missing&&!reveal)return '';
     let r=Math.min(q.a,q.b),c=Math.max(q.a,q.b);if(q.missing){r=q.a;c=q.b}
     if(r*c<=40){const fs=c>8?16:c>5?20:24;
       return `<div class="vis"><div class="arr" style="font-size:${fs}px">${Array.from({length:r},()=>`<div>${'🐱'.repeat(c)}</div>`).join('')}</div><div class="cap">${r} row${r>1?'s':''} of ${c}</div></div>`}
+    if(c>15)return '';
     const split=c>10?10:(c>5?5:0);let cells='';
     for(let i=0;i<r;i++)for(let j=0;j<c;j++)cells+=`<i class="${split&&j>=split?'b':''}"></i>`;
     return `<div class="vis"><div class="dots" style="grid-template-columns:repeat(${c},var(--d))">${cells}</div><div class="cap">${r} rows of ${c}${split?` → ${r} × ${split} and ${r} × ${c-split}`:''}</div></div>`;
@@ -765,8 +850,8 @@ function visual(q,reveal){
   }
   return '';
 }
-function plainEq(q){if(q.op==='+3')return `${q.nums.join(' + ')} = ${q.ans}`;return `${q.a} ${q.op} ${q.b} = ${q.op==='×'?q.a*q.b:q.a+q.b}`}
-function qPlain(q){return q.missing?q.text:q.text+' = ?'}
+function plainEq(q){if(q.kind==='groups')return `${q.a} × ${q.b} = ${q.ans}`;if(q.op==='+3')return `${q.nums.join(' + ')} = ${q.ans}`;return `${q.a} ${q.op} ${q.b} = ${q.op==='×'?q.a*q.b:q.a+q.b}`}
+function qPlain(q){if(q.disp)return q.disp.replace(/<br>/g,' ').replace('□','?');return q.missing?q.text:q.text+' = ?'}
 function choicesFor(q){
   const ans=q.ans,set=new Set([ans]);
   const c=(q.op==='×'&&!q.missing)?[(q.a+1)*q.b,(q.a-1)*q.b,q.a*(q.b+1),q.a*(q.b-1),ans+1,ans-1,q.a+q.b]:[ans+1,ans-1,ans+2,ans-2,ans+10,ans-10];
@@ -812,21 +897,22 @@ function companionLine(){
   const r=rankInfo(),due=dueFacts().length,nm=S.name;
   if(r.next&&Math.random()<.35)return `Only ${r.next.min-totalStars()} more ⭐ until you become a ${r.next.name}!`;
   if(due>=3&&Math.random()<.4)return `${due} facts in your Review Garden are ready to bloom 🌷`;
-  return pick([`Hi ${nm}! Ready to light up some crystals?`,'Mistakes help your brain grow. Every one teaches you something!','Tip: for × 9, do × 10 and take one away!','Tip: for × 4, double it… then double again!','Tip: 8 + 5? Make 10 first: 8 + 2 = 10, then 3 more!','A little practice every day beats a lot once a week.','Will you draw something for me in the Studio? 🎨',`I'm so proud to be your cat, ${nm}!`,'Tip: 3 × 7 is the same as 7 × 3. Flip it if it helps!','Tap me for a purr! 💖']);
+  return pick([`Hi ${nm}! Ready to light up some crystals?`,'Mistakes help your brain grow. Every one teaches you something!','Tip: for × 9, do × 10 and take one away!','Tip: for × 4, double it… then double again!','Tip: for × 6, do × 5 and add one more group!','Tip: for × 8, double, double, then double again!','Tip: 11 × 4 = 44, 11 × 7 = 77… the twin-digit trick!','Tip: for × 12, do × 10, then add × 2.','Tip: 7 × 8 = 56… just remember 5, 6, 7, 8!','Light up your Times Table Crystals in the Dojo! 💎','A little practice every day beats a lot once a week.','Will you draw something for me in the Studio? 🎨',`I'm so proud to be your cat, ${nm}!`,'Tip: 3 × 7 is the same as 7 × 3. Flip it if it helps!','Tap me for a purr! 💖']);
 }
 function mapView(){
   const ri=UI.realm,R=REALMS[ri],open=realmUnlocked(ri),r=rankInfo(),ts=totalStars();
   let h=`<section class="companion"><button class="petbtn" data-act="pet" aria-label="Pet ${esc(catName())}">${catHTML(92,'normal',{cls:'idle'})}</button><div class="bubble" id="bubble">${esc(companionLine())}</div></section>`;
   if(r.next){const pct=(ts-RANKS[r.i].min)/(r.next.min-RANKS[r.i].min)*100;h+=`<div class="rankbar"><span>🏅 ${r.name}</span><div class="meter"><i style="width:${pct}%"></i></div><span>${ts}/${r.next.min}⭐</span></div>`}
   else h+=`<div class="rankbar">🏆 You are a Legendary Keeper!</div>`;
-  h+=`<div class="realm-head"><button class="arrow" data-act="realm" data-d="-1" ${ri===0?'disabled':''} aria-label="Previous realm">◀</button><h1>${R.icon} ${R.name}</h1><button class="arrow" data-act="realm" data-d="1" ${ri===REALMS.length-1?'disabled':''} aria-label="Next realm">▶</button></div>`;
+  h+=crystalsHTML();
+  h+=`<div class="realm-head"><button class="arrow" data-act="realm" data-d="-1" ${ri===0?'disabled':''} aria-label="Previous realm">◀</button><h1>${R.icon} ${R.name}${R.bonus?'<span class="bonus-tag">bonus</span>':''}</h1><button class="arrow" data-act="realm" data-d="1" ${ri===REALMS.length-1?'disabled':''} aria-label="Next realm">▶</button></div>`;
   h+=`<div class="realm-dots">${REALMS.map((X,i)=>`<button class="${i===ri?'on':''} ${realmUnlocked(i)?'':'lock'}" data-act="realmGo" data-r="${i}" aria-label="${X.name}">${X.icon}</button>`).join('')}</div>`;
   if(!open){
     const need=R.requires.map(id=>REALMS.find(x=>x.id===id)).filter((X)=>{const i=REALMS.indexOf(X);return !S.stars[lid(i,X.levels.length-1)]});
     return h+`<div class="card lockcard"><div class="big">🔒</div><h3>${R.name}</h3><p>${R.intro}</p><p class="tiny" style="margin-top:8px">To open it, cheer up ${need.map(X=>`<b>${X.guardian.name}</b> in ${X.name}`).join(' and ')}.</p></div>`;
   }
   const done=R.levels.filter((_,i)=>S.stars[lid(ri,i)]).length;
-  h+=`<div class="realm-track">${R.track} · ${done}/${R.levels.length} crystals glowing</div><p class="realm-intro">${R.intro}</p>`;
+  h+=`<div class="realm-track">${R.track} · ${done}/${R.levels.length} levels lit</div><p class="realm-intro">${R.intro}</p>`;
   return h+pathHTML(ri);
 }
 function pathHTML(ri){
@@ -850,10 +936,10 @@ function practiceView(){
   const due=dueFacts().length,seen=Object.keys(S.facts).length;
   const gtxt=seen<5?'Play a few levels and your garden will start to grow!':due?`${due} fact${due>1?'s are':' is'} ready to bloom. Reviewing at just the right time locks facts into your memory!`:'Everything is resting and growing. Extra practice still earns yarn!';
   return `<h2 class="sec">Practice</h2>
+  <div class="pcard col"><div class="row" style="justify-content:flex-start"><div class="pi">✖️</div><div class="grow"><h3>Times Table Dojo</h3><p>Pick a table to train. Each crystal glows brighter as you remember more of that table over different days.</p></div></div>
+  <div class="tables">${range(2,12).map(t=>{const p=crystalLvl(t);return `<button class="tbtn" data-act="table" data-t="${t}">×${t}<small>${Math.round(p*100)}% glowing</small><span class="minibar"><i style="width:${p*100}%"></i></span></button>`}).join('')}</div></div>
   <div class="pcard"><div class="pi">🌷</div><div class="grow"><h3>Review Garden</h3><p>${gtxt}</p></div><button class="btn mint" data-act="garden" ${seen<5?'disabled':''}>Water</button></div>
-  <div class="pcard"><div class="pi">⚡</div><div class="grow"><h3>Lightning Paws</h3><p>60 seconds. Race your own best score: <b>${S.stats.lightningBest}</b></p></div><button class="btn sun" data-act="lightning">Go!</button></div>
-  <div class="pcard col"><div class="row" style="justify-content:flex-start"><div class="pi">✖️</div><div class="grow"><h3>Times Table Dojo</h3><p>Pick any table to train. The bar shows how strong each one is.</p></div></div>
-  <div class="tables">${range(2,12).map(t=>{const k=tableStrong(t);return `<button class="tbtn" data-act="table" data-t="${t}">×${t}<small>${k}/12 strong</small><span class="minibar"><i style="width:${k/12*100}%"></i></span></button>`}).join('')}</div></div>`;
+  <div class="pcard"><div class="pi">⚡</div><div class="grow"><h3>Lightning Paws</h3><p>60 seconds of times tables. Race your own best score: <b>${S.stats.lightningBest}</b></p></div><button class="btn sun" data-act="lightning">Go!</button></div>`;
 }
 
 /* ---------------- CLOSET ---------------- */
@@ -987,6 +1073,7 @@ function parentsView(){
    <div class="row" style="justify-content:flex-start;margin-top:8px"><b>This device</b><button class="chip" data-act="signOut">Sign out</button><button class="chip" data-act="reset">Start over…</button></div>
    <p class="tiny" style="margin-top:6px">To play on another device, open the game there and type the same name <b>${esc(S.name)}</b>. Anyone who types that name can open this save, so a unique name works best. Sign out keeps the cloud save; Start over erases it on this device and in the cloud.</p></div>
   <h3 class="sub">How the game is designed</h3><div class="notes"><ul style="padding-left:18px;margin:0">
+   <li><b>Multiplication-first quest.</b> The main path covers the times tables in the usual teaching order: what × means (equal groups), ×2/×5/×10, ×3/×4/×6, ×7/×8/×9 and squares, then ×11/×12, ×10s and 2-digit × 1-digit by splitting (14 × 3 = 10 × 3 + 4 × 3). Addition is an optional bonus realm. Each times table has a crystal that lights up as its facts become strong over several days.</li>
    <li><b>Spaced repetition.</b> Every addition and times-table fact sits in its own memory box. Facts she gets right come back after 1, 2, 4, 7 then 14 days. Facts she misses come back sooner. Due facts are mixed into levels and the Review Garden.</li>
    <li><b>Retrieval and interleaving.</b> She types answers from memory, not just picks them. Older facts are mixed in with new ones, which builds longer-lasting memory than practising one table at a time.</li>
    <li><b>The right amount of challenge (~85% success).</b> Each realm starts with picture-supported multiple choice, then moves to recall. The first miss gives a clue. A second miss shows a worked picture explanation, and the same question comes back later in the level.</li>
@@ -1003,7 +1090,7 @@ function parentsView(){
 /* ---------------- ONBOARDING ---------------- */
 function renderOnboard(){
   setTheme('meadow');const st=UI.onboard,fur=UI.tmpFur||'ginger';
-  if(st===0){app.innerHTML=`<div class="onb">${catHTML(170,'happy',{fur,equipped:{}, cls:'idle'})}<h1 class="title">Whisker Academy</h1><p class="lead">A maths adventure through the Lost Kitty Realms</p><label class="lbl" for="nm">What's your name, Keeper?</label><input id="nm" class="bigin" maxlength="16" autocomplete="off" placeholder="Your name" value="${esc(UI.tmpName||'')}"><button class="btn big" data-act="ob1" data-primary ${UI.checking?'disabled':''}>${UI.checking?'Looking for your cat… 🔍':'Next ▶'}</button><p class="tiny">Played before? Type the same name to carry on where you left off — on any device!</p>${UI.obErr?`<p class="nudge">${UI.obErr}</p>`:''}</div>`;setTimeout(()=>{const i=$('#nm');i&&i.focus()},50);return}
+  if(st===0){app.innerHTML=`<div class="onb">${catHTML(170,'happy',{fur,equipped:{}, cls:'idle'})}<h1 class="title">Whisker Academy</h1><p class="lead">A times-tables adventure through the Lost Kitty Realms</p><label class="lbl" for="nm">What's your name, Keeper?</label><input id="nm" class="bigin" maxlength="16" autocomplete="off" placeholder="Your name" value="${esc(UI.tmpName||'')}"><button class="btn big" data-act="ob1" data-primary ${UI.checking?'disabled':''}>${UI.checking?'Looking for your cat… 🔍':'Next ▶'}</button><p class="tiny">Played before? Type the same name to carry on where you left off — on any device!</p>${UI.obErr?`<p class="nudge">${UI.obErr}</p>`:''}</div>`;setTimeout(()=>{const i=$('#nm');i&&i.focus()},50);return}
   if(st===1){app.innerHTML=`<div class="onb"><p class="lead">Every Keeper has a cat companion. Meet yours!</p>${catHTML(170,'normal',{fur,equipped:{},cls:'idle'})}
    <div class="swatches" style="width:100%;max-width:520px">${Object.entries(FURS).filter(([,f])=>!f.price).map(([id,f])=>`<button class="sw ${fur===id?'on':''}" data-act="obfur" data-id="${id}"><span class="dot" style="background:${f.c}"></span>${f.name}</button>`).join('')}</div>
    <label class="lbl" for="cn">What will you name your cat?</label><input id="cn" class="bigin" maxlength="14" autocomplete="off" placeholder="Cat's name" value="${esc(UI.tmpCat||'')}">
@@ -1011,8 +1098,8 @@ function renderOnboard(){
    <button class="btn big" data-act="ob2" data-primary>Next ▶</button></div>`;return}
   app.innerHTML=`<div class="onb">${catHTML(150,'happy',{fur,equipped:{},cls:'idle'})}<div class="story"><b>Welcome to Whisker Academy, ${esc(UI.tmpName)}!</b><br><br>
    Long ago, glowing crystals lit up every one of the Lost Kitty Realms. Now a strange fog has dimmed them, and the realm guardians have gone grumpy. 🌧️<br><br>
-   Only a <b>Keeper of Numbers</b> can bring the light back. Every maths problem you solve sends a spark of light, and ${esc(UI.tmpCat)} will be with you all the way.
-   <ul><li>⭐ Earn up to 3 stars on every level</li><li>🧶 Collect yarn to dress up ${esc(UI.tmpCat)}</li><li>🎁 Open a mystery gift after every level</li><li>🎨 Draw your own pictures in the Studio</li><li>💪 Mistakes are fine — they're how brains grow!</li></ul></div>
+   Only a <b>Keeper of Numbers</b> can bring the light back. Every times-table problem you solve sends a spark of light, and ${esc(UI.tmpCat)} will be with you all the way.
+   <ul><li>✖️ Master your times tables, realm by realm</li><li>💎 Make all 11 Times Table Crystals glow</li><li>⭐ Earn up to 3 stars on every level</li><li>🧶 Collect yarn to dress up ${esc(UI.tmpCat)}</li><li>🎁 Open a mystery gift after every level</li><li>🎨 Draw your own pictures in the Studio</li><li>💪 Mistakes are fine — they're how brains grow!</li></ul></div>
    <button class="btn big" data-act="obgo" data-primary>Let's go! ✨</button></div>`;
 }
 
@@ -1036,17 +1123,19 @@ function startLevel(r,l){
 }
 function startGarden(){
   const seen=Object.keys(S.facts);if(seen.length<5)return;
-  let keys=dueFacts().slice(0,10);for(const k of weakFacts()){if(keys.length>=10)break;if(!keys.includes(k))keys.push(k)}
+  const mFirst=a=>a.filter(k=>k[0]==='m').concat(a.filter(k=>k[0]!=='m'));
+  let keys=mFirst(dueFacts()).slice(0,10);for(const k of mFirst(weakFacts())){if(keys.length>=10)break;if(!keys.includes(k))keys.push(k)}
   newPlay({mode:'garden',title:'🌷 Review Garden',qs:shuffle(keys).map(factToQ)});
 }
 function startTable(t){
-  const qs=shuffle(range(1,12)).slice(0,10).map(m=>Math.random()<.25&&m>1?missingMulQ(t,m):mulQ(t,m));
+  const qs=shuffle(range(1,12)).slice(0,10).map((m,i)=>{const r=Math.random();if(i>=2&&r<.2&&m>1)return missingMulQ(t,m);if(i>=2&&r<.3)return turnQ(t,m);return mulQ(t,m)});
+  if(Math.random()<.6)qs[rnd(3,8)]=skipQ(t);
   newPlay({mode:'table',t,title:`✖️ ×${t} Dojo`,qs});
 }
 function lightningQ(){
-  const keys=Object.keys(S.facts).filter(k=>S.facts[k].box>=1);
+  const keys=Object.keys(S.facts).filter(k=>k[0]==='m'&&S.facts[k].box>=1);
   if(keys.length>=8&&Math.random()<.8)return factToQ(pick(keys));
-  return pick([G.add20,G.mul([2,5,10]),G.doubles])();
+  return pick([G.mul([2,5,10]),G.mul([2,5,10]),G.mul([3,4,6]),G.mul(ALL)])();
 }
 function startLightning(){
   newPlay({mode:'lightning',title:'⚡ Lightning Paws',qs:[lightningQ()],score:0,end:Date.now()+60000,hints:0});
@@ -1056,6 +1145,7 @@ function comboText(){return P.combo>=2?`🔥 Combo ×${P.combo}`:''}
 function qDisplay(q){
   const slot=P.explaining?`<span class="ans reveal" id="ans">${q.ans}</span>`:`<span class="ans" id="ans">${P.input||'?'}</span>`;
   if(q.word)return `<span class="wordans">Answer: ${slot}</span>`;
+  if(q.disp)return esc(q.disp).replace(/&lt;br&gt;/g,'<br>').replace('□',slot);
   if(q.missing)return esc(q.mtext).replace('□',slot);
   return `${q.text} = ${slot}`;
 }
@@ -1075,7 +1165,7 @@ function renderPlay(){
    <div class="qcard" id="qcard">
     <div class="qlabel">${P.title}${q.review?'<span class="tag">🌱 review</span>':''}${q.requeued?'<span class="tag">↻ again</span>':''}</div>
     ${q.word?`<div class="word">${esc(q.word)}</div>`:''}
-    <div class="qtext">${qDisplay(q)}</div>
+    <div class="qtext ${q.long?'long':''}">${qDisplay(q)}</div>
     <div id="qvis">${showVis?visual(q):''}</div>
     <div id="hintbox">${P.explaining?explainHTML(q):(P.hintHTML||'')}</div>
    </div>
@@ -1102,7 +1192,7 @@ function submit(val){
   if(val===q.ans){
     const first=P.tries===0&&!P.hintUsed,credit=P.tries===0?(P.hintUsed?.5:1):.5;
     if(!q.requeued)P.credits.push(credit);
-    recordFact(q,first);S.stats.answered++;if(first)S.stats.firstTry++;
+    recordFact(q,first);checkCrystals(q);S.stats.answered++;if(first)S.stats.firstTry++;
     if(P.tries>0||q.requeued)P.fixed++;
     P.combo=first?P.combo+1:0;P.maxCombo=Math.max(P.maxCombo,P.combo);S.stats.bestCombo=Math.max(S.stats.bestCombo,P.combo);
     if(P.combo>=5)badge('combo5');if(P.combo>=10)badge('combo10');
@@ -1151,7 +1241,7 @@ function useHint(){
 }
 function lightningSubmit(val,q){
   const a=$('#ans');P.locked=true;
-  if(val===q.ans){P.score++;recordFact(q,true);S.stats.answered++;S.stats.firstTry++;P.combo++;sfx.correct(Math.min(P.combo,12));
+  if(val===q.ans){P.score++;recordFact(q,true);checkCrystals(q);S.stats.answered++;S.stats.firstTry++;P.combo++;sfx.correct(Math.min(P.combo,12));
     if(a){a.classList.add('right');const r=a.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,['⚡','✨'],6)}
     setTimeout(lnext,220)}
   else{P.combo=0;sfx.wrong();recordFact(q,false);S.stats.answered++;if(a){a.textContent=q.ans;a.classList.add('reveal')}setTimeout(lnext,900)}

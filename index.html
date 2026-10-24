@@ -513,6 +513,47 @@ button.me{cursor:pointer}
 @keyframes lTuck{0%,100%{transform:translateY(0)}40%,70%{transform:translateY(-15px)}}
 @keyframes aStarL{0%,100%{transform:rotate(0)}18%,82%{transform:rotate(125deg)}}
 @keyframes aStarR{0%,100%{transform:rotate(0)}18%,82%{transform:rotate(-125deg)}}
+
+/* ---- v5: subtraction & division pictures, more moves ---- */
+.realm-dots{flex-wrap:wrap}
+.pe{font-style:normal;display:inline-block;position:relative}
+.pe.gone{opacity:.32}
+.pe.gone::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#d94a8c;font-weight:900;font-size:.85em;opacity:1}
+.tf i.x{background:#ffd0e2!important;position:relative}
+.tf i.x::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#d94a8c;font-weight:900;font-size:15px;line-height:1}
+.rod.gone{opacity:.22}
+.plates{display:flex;gap:10px;justify-content:center;font-size:32px;line-height:1}
+.g1.plate b{display:block;font-size:1.15em;line-height:1.1}
+.g1.left{border-color:#ffb7d6;background:#fff0f7}
+.burrow{background:#f3e7d3!important}
+.cat.mv-floss{animation:mvFloss 1.6s ease-in-out}
+.cat.mv-floss .k-armL,.cat.mv-floss .k-armR{animation:aFloss .4s ease-in-out 4}
+.cat.mv-karate{animation:mvLean 1.3s ease-in-out}
+.cat.mv-karate .k-armR{animation:aChop 1.3s ease-in-out}.cat.mv-karate .k-legL{animation:lKick 1.3s ease-in-out}
+.cat.mv-yawn{animation:mvStretch 1.9s ease-in-out}
+.cat.mv-yawn .k-armL{animation:aUpL 1.9s ease-in-out}.cat.mv-yawn .k-armR{animation:aUpR 1.9s ease-in-out}
+.cat.mv-yawn .e-happy,.cat.mv-yawn .m-grin{display:none}.cat.mv-yawn .e-sleepy,.cat.mv-yawn .m-open{display:inline}.cat.mv-yawn .m-open{animation:mYawn 1.9s ease-in-out}
+.cat.mv-drum .k-armL{animation:aDrumL .2s ease-in-out 8}.cat.mv-drum .k-armR{animation:aDrumR .2s ease-in-out 8}.cat.mv-drum .k-head{animation:hBop .4s ease-in-out 4}
+.cat.mv-magic{animation:mvSpin 1.5s ease-in-out}.cat.mv-magic .k-armR{animation:aMagic 1.5s ease-in-out}
+.cat.mv-zoomies{animation:mvZoom 1.7s ease-in-out}
+.cat.mv-zoomies .k-legL{animation:lStepA .2s linear 8}.cat.mv-zoomies .k-legR{animation:lStepB .2s linear 8}.cat.mv-zoomies .k-armL{animation:aSwingL .2s linear 8}.cat.mv-zoomies .k-armR{animation:aSwingR .2s linear 8}
+.fx-drum{left:34%;top:68%;animation:fxPop 1.6s ease-out both}
+.fx-karate{right:-24%;top:44%;animation:fxPop 1s ease-out .35s both}
+.fx-yawn{left:66%;top:4%;animation:fxFloat 1.9s ease-out both}
+.fx-zoomies{left:-22%;top:62%;animation:fxPop 1.7s ease-out both}
+.fx-magic{right:-18%;top:0;animation:fxPop 1.5s ease-out both}
+@keyframes aFloss{0%,100%{transform:rotate(38deg)}50%{transform:rotate(-38deg)}}
+@keyframes mvFloss{0%,25%,50%,75%,100%{transform:translateX(0)}12%,62%{transform:translateX(4%)}37%,87%{transform:translateX(-4%)}}
+@keyframes aChop{0%,100%{transform:rotate(0)}25%{transform:rotate(-165deg)}40%,72%{transform:rotate(-85deg)}}
+@keyframes lKick{0%,100%{transform:none}40%,72%{transform:translate(-16px,-12px) rotate(-25deg)}}
+@keyframes mvLean{0%,100%{transform:rotate(0)}40%,72%{transform:rotate(5deg)}}
+@keyframes mvStretch{0%,100%{transform:scale(1)}35%,70%{transform:scale(.96,1.08)}}
+@keyframes mYawn{0%,100%{transform:scale(.6)}35%,70%{transform:scale(1.35,1.6)}}
+@keyframes aDrumL{0%,100%{transform:rotate(-32deg)}50%{transform:rotate(-4deg)}}
+@keyframes aDrumR{0%,100%{transform:rotate(4deg)}50%{transform:rotate(32deg)}}
+@keyframes aMagic{0%,100%{transform:rotate(0)}20%{transform:rotate(-150deg)}35%{transform:rotate(-118deg)}50%{transform:rotate(-160deg)}65%{transform:rotate(-118deg)}80%{transform:rotate(-150deg)}}
+@keyframes mvZoom{0%,100%{transform:translateX(0) rotate(0)}20%{transform:translateX(-28%) rotate(-6deg)}45%{transform:translateX(28%) rotate(6deg)}70%{transform:translateX(-18%) rotate(-4deg)}88%{transform:translateX(8%) rotate(2deg)}}
+@media (min-width:700px){.plates{font-size:44px}.tf i.x::after{font-size:22px}}
 /* iPad / tablet: bigger everything */
 @media (min-width:700px){
   :root{--d:15px}
@@ -597,7 +638,12 @@ const FURS={
   lavender:{name:'Lavender',c:'#d5c3ff',belly:'#f1eaff',price:80},
   mint:{name:'Mint',c:'#b8eedb',belly:'#e8fbf4',price:80},
   sky:{name:'Sky',c:'#a9dcff',belly:'#e5f5ff',price:100},
-  galaxy:{name:'Galaxy',c:'url(#galaxyG)',css:'linear-gradient(135deg,#5b3fa8,#b65fcf,#3f6fd1)',belly:'#d9c8ff',eye:'#fff2a8',dark:true,price:300}
+  peach:{name:'Peach',c:'#ffc9a8',belly:'#fff0e6',price:80},
+  lemon:{name:'Lemon',c:'#fff0a0',belly:'#fffbe0',price:80},
+  cocoa:{name:'Cocoa',c:'#a97a5a',belly:'#e8cdb5',price:90},
+  galaxy:{name:'Galaxy',c:'url(#galaxyG)',css:'linear-gradient(135deg,#5b3fa8,#b65fcf,#3f6fd1)',belly:'#d9c8ff',eye:'#fff2a8',dark:true,price:300},
+  rainbow:{name:'Rainbow',c:'url(#rainbowG)',css:'linear-gradient(135deg,#ff9aa2,#ffd59a,#b5ead7,#9ad0ff,#c9a7ff)',belly:'#ffffff',price:350},
+  gold:{name:'Golden',c:'url(#goldG)',css:'linear-gradient(135deg,#ffe58a,#ffbf3c,#fff1b8)',belly:'#fff6d6',price:400}
 };
 const ITEMS=[
   {id:'bow',slot:'head',e:'🎀',name:'Pink Bow',price:25,x:72,y:14,s:26,r:20},
@@ -615,7 +661,28 @@ const ITEMS=[
   {id:'balloon',slot:'back',e:'🎈',name:'Balloon',price:50,x:88,y:30,s:30,r:10},
   {id:'book',slot:'back',e:'📖',name:'Spell Book',price:80,x:16,y:80,s:26,r:-10},
   {id:'butterfly',slot:'back',e:'🦋',name:'Butterfly Friend',price:130,x:14,y:30,s:28,r:-15},
-  {id:'sparkle',slot:'back',e:'✨',name:'Sparkle Aura',price:200,x:86,y:16,s:30,r:0}
+  {id:'sparkle',slot:'back',e:'✨',name:'Sparkle Aura',price:200,x:86,y:16,s:30,r:0},
+  {id:'berry',slot:'head',e:'🍓',name:'Berry Clip',price:35,x:72,y:15,s:22,r:15},
+  {id:'sunflower',slot:'head',e:'🌻',name:'Sunflower',price:40,x:28,y:14,s:26,r:-12},
+  {id:'snowclip',slot:'head',e:'❄️',name:'Snowflake Clip',price:55,x:72,y:14,s:22,r:0},
+  {id:'sunhat',slot:'head',e:'👒',name:'Sun Hat',price:65,x:50,y:13,s:40,r:0},
+  {id:'rainbowclip',slot:'head',e:'🌈',name:'Rainbow Clip',price:85,x:50,y:9,s:30,r:0},
+  {id:'headphones',slot:'head',e:'🎧',name:'DJ Headphones',price:95,x:50,y:15,s:40,r:0},
+  {id:'cheeks',slot:'face',e:'💗',name:'Heart Cheeks',price:35,x:69,y:53,s:13,r:10},
+  {id:'starcheek',slot:'face',e:'⭐',name:'Star Cheek',price:45,x:31,y:53,s:13,r:-10},
+  {id:'goggles',slot:'face',e:'🥽',name:'Swim Goggles',price:60,x:50,y:41,s:36,r:0},
+  {id:'daisy',slot:'neck',e:'🌼',name:'Daisy Charm',price:40,x:50,y:68,s:16,r:0},
+  {id:'beads',slot:'neck',e:'📿',name:'Bead Necklace',price:60,x:50,y:70,s:22,r:0},
+  {id:'tie',slot:'neck',e:'👔',name:'Smart Shirt',price:70,x:50,y:77,s:20,r:0},
+  {id:'medal',slot:'neck',e:'🏅',name:'Gold Medal',price:120,x:50,y:72,s:20,r:0},
+  {id:'fishsnack',slot:'back',e:'🐟',name:'Fish Snack',price:35,x:80,y:84,s:22,r:-20},
+  {id:'bubbles',slot:'back',e:'🫧',name:'Bubbles',price:60,x:86,y:22,s:28,r:0},
+  {id:'backpack',slot:'back',e:'🎒',name:'Backpack',price:70,x:18,y:74,s:28,r:-8},
+  {id:'kite',slot:'back',e:'🪁',name:'Kite',price:90,x:88,y:14,s:32,r:15},
+  {id:'wand',slot:'back',e:'🪄',name:'Magic Wand',price:110,x:80,y:82,s:26,r:-25},
+  {id:'moonfriend',slot:'back',e:'🌙',name:'Moon Friend',price:150,x:14,y:18,s:28,r:-10},
+  {id:'unicorn',slot:'back',e:'🦄',name:'Unicorn Pal',price:260,x:12,y:76,s:30,r:0},
+  {id:'rainbowsky',slot:'back',e:'🌈',name:'Rainbow Sky',price:300,x:50,y:16,s:60,r:0}
 ];
 const ITEM=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 const SLOTS={head:'Hats & clips',face:'Glasses',neck:'Necklaces',back:'Extras'};
@@ -632,7 +699,13 @@ const MOVES=[
   {id:'moonwalk',e:'🕺',name:'Moonwalk',price:140,dur:2000},
   {id:'cartwheel',e:'🤸',name:'Cartwheel',price:160,dur:1600},
   {id:'backflip',e:'🔄',name:'Backflip',price:200,dur:1250},
-  {id:'superstar',e:'🌟',name:'Superstar Leap',price:250,dur:1400,fx:'⭐'}
+  {id:'superstar',e:'🌟',name:'Superstar Leap',price:250,dur:1400,fx:'⭐'},
+  {id:'yawn',e:'😴',name:'Big Stretch',price:70,dur:1900,fx:'💤'},
+  {id:'drum',e:'🥁',name:'Drum Solo',price:120,dur:1600,fx:'🥁'},
+  {id:'karate',e:'🥋',name:'Karate Kick',price:150,dur:1300,fx:'💥'},
+  {id:'floss',e:'🪩',name:'Disco Floss',price:180,dur:1600},
+  {id:'zoomies',e:'💨',name:'Zoomies',price:220,dur:1700,fx:'💨'},
+  {id:'magic',e:'🪄',name:'Magic Trick',price:280,dur:1500,fx:'✨'}
 ];
 const MOVE=Object.fromEntries(MOVES.map(m=>[m.id,m]));
 const STICKERS=[
@@ -644,7 +717,7 @@ const STICKERS=[
   ['unicorn','🦄','Starhorn','l'],['dragon','🐲','Tiny Dragon','l'],['lion','🦁','Sunmane','l'],['whale','🐳','Sky Whale','l']
 ];
 const RARITY={c:'Common',r:'Rare',l:'Legendary'};
-const RANKS=[{min:0,name:'Apprentice Keeper'},{min:8,name:'Spark Keeper'},{min:20,name:'Glow Keeper'},{min:40,name:'Crystal Keeper'},{min:65,name:'Star Keeper'},{min:95,name:'Legendary Keeper'}];
+const RANKS=[{min:0,name:'Apprentice Keeper'},{min:8,name:'Spark Keeper'},{min:20,name:'Glow Keeper'},{min:40,name:'Crystal Keeper'},{min:65,name:'Star Keeper'},{min:95,name:'Legendary Keeper'},{min:140,name:'Mythic Keeper'},{min:200,name:'Grand Keeper of Numbers'}];
 const COLORS=['#3b2a4f','#ff6fae','#ff8a5c','#ffc43d','#7ad66f','#36c9a0','#5bb8ff','#a98bff','#9a6b4f','#b9b3c4'];
 const STAMPS=['🐱','🐾','⭐','💖','🐟','🌸','👑','🌈'];
 const DRAW_CHALLENGES=[
@@ -661,7 +734,13 @@ const DRAW_CHALLENGES=[
   {t:'Draw 3 rows of 3 cats — a cat square!',q:'How many cats?',a:9},
   {t:'Draw 5 kittens. Each kitten has 4 legs.',q:'How many legs?',a:20},
   {t:'Draw 9 fish for a hungry cat, then 9 more for her friend.',q:'How many fish?',a:18},
-  {t:'Draw 6 cats, each with 2 ears. Count the ears!',q:'How many ears?',a:12}
+  {t:'Draw 6 cats, each with 2 ears. Count the ears!',q:'How many ears?',a:12},
+  {t:'Draw 12 fish, then share them between 3 cats.',q:'How many fish does each cat get?',a:4},
+  {t:'Draw 10 balloons. Cross out 4 that popped!',q:'How many balloons are left?',a:6},
+  {t:'Draw 15 stars, then circle them in groups of 5.',q:'How many groups did you make?',a:3},
+  {t:'Draw 9 cupcakes. A sneaky cat eats 3 of them!',q:'How many cupcakes are left?',a:6},
+  {t:'Draw 20 flowers and plant them in 4 equal pots.',q:'How many flowers in each pot?',a:5},
+  {t:'Draw 18 paw prints, then rub out 7 of them.',q:'How many paw prints are left?',a:11}
 ];
 
 /* ---------------- save state ---------------- */
@@ -775,6 +854,7 @@ const sfx={
   whoosh:()=>tone(240,.4,'sine',.05,0,960),
   twinkle:()=>[1568,2093,2637].forEach((f,i)=>tone(f,.2,'sine',.04,i*.06))
 };
+sfx.drum=()=>[0,.2,.4,.6,.8,1,1.2].forEach((w,i)=>tone(i%2?190:120,.12,'triangle',.09,w));
 function mallet(f,w,vol){tone(f,.38,'sine',vol,w);tone(f*4,.07,'sine',vol*.28,w);tone(f*2,.16,'triangle',vol*.3,w)}
 
 /* ---------------- relaxing background music (generated live, no files) ---------------- */
@@ -823,7 +903,7 @@ function pickVoice(){
   return goodVoices()[0]||null;
 }
 function resolveVoice(){if(VOICE===undefined){const v=pickVoice();if(v!==undefined)VOICE=v}return VOICE||null}
-function speechText(t){return String(t).replace(/<[^>]+>/g,' ').replace(/×/g,' times ').replace(/\+/g,' plus ').replace(/=/g,' equals ').replace(/→/g,', then ').replace(/−/g,' minus ').replace(/□/g,' what ').replace(/\s+/g,' ').trim()}
+function speechText(t){return String(t).replace(/<[^>]+>/g,' ').replace(/÷/g,' divided by ').replace(/×/g,' times ').replace(/\+/g,' plus ').replace(/=/g,' equals ').replace(/→/g,', then ').replace(/−/g,' minus ').replace(/□/g,' what ').replace(/\s+/g,' ').trim()}
 function speak(t){
   if(!t||!('speechSynthesis' in window))return;
   const txt=speechText(t);
@@ -846,7 +926,7 @@ function catSVG(furId,mood){
   const st=`stroke="${ink}" stroke-width="4" stroke-linejoin="round"`;
   const limb=(d,w=21,w2=13)=>`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${fill}" stroke-width="${w2}" stroke-linecap="round" stroke-linejoin="round"/>`;
   const heart=x=>`<path d="M${x} 96 C${x-17} 85 ${x-12} 70 ${x} 79 C${x+12} 70 ${x+17} 85 ${x} 96 Z" fill="#ff4f8b" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/>`;
-  return `<svg class="kitty" viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="galaxyG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b3fa8"/><stop offset=".5" stop-color="#b65fcf"/><stop offset="1" stop-color="#3f6fd1"/></linearGradient></defs>
+  return `<svg class="kitty" viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="galaxyG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b3fa8"/><stop offset=".5" stop-color="#b65fcf"/><stop offset="1" stop-color="#3f6fd1"/></linearGradient><linearGradient id="rainbowG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9aa2"/><stop offset=".25" stop-color="#ffd59a"/><stop offset=".5" stop-color="#b5ead7"/><stop offset=".75" stop-color="#9ad0ff"/><stop offset="1" stop-color="#c9a7ff"/></linearGradient><linearGradient id="goldG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe58a"/><stop offset=".55" stop-color="#ffbf3c"/><stop offset="1" stop-color="#fff1b8"/></linearGradient></defs>
 <g class="k-all">
 <g class="k-tail">${limb('M150 162 C192 152 190 112 168 104')}</g>
 <g class="k-legL"><ellipse cx="80" cy="189" rx="14" ry="9" fill="${fill}" ${st}/></g>
@@ -886,8 +966,10 @@ function doMove(el,id){
   [...el.classList].forEach(c=>{if(c.startsWith('mv-'))el.classList.remove(c)});el.classList.remove('bounce');
   el.querySelectorAll('.mvfx').forEach(x=>x.remove());void el.offsetWidth;el.classList.add('moving','mv-'+id);
   if(m.fx){const n=(id==='hearts'||id==='sing')?3:1;for(let i=0;i<n;i++){const sp=document.createElement('span');sp.className='mvfx fx-'+id;sp.textContent=id==='sing'?pick(['🎵','🎶']):m.fx;sp.style.fontSize=Math.round(el.offsetWidth*.32)+'px';sp.style.animationDelay=(i*.25)+'s';sp.style.setProperty('--fx',rnd(-40,40)+'px');el.appendChild(sp)}}
+  if(id==='magic')setTimeout(()=>{if(!el.isConnected)return;const r=el.getBoundingClientRect();burst(r.left+r.width*.8,r.top+r.height*.1,['✨','🌟','💫'],12,110)},450);
+  if(id==='drum')sfx.drum();
   if(id==='superstar')setTimeout(()=>{if(!el.isConnected)return;const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/3,['⭐','🌟','✨'],14,140)},500);
-  if(['backflip','cartwheel','spin','jump'].includes(id))sfx.whoosh();else if(['superstar','hearts','sing'].includes(id))sfx.twinkle();
+  if(['backflip','cartwheel','spin','jump','zoomies','karate'].includes(id))sfx.whoosh();else if(['superstar','hearts','sing','magic'].includes(id))sfx.twinkle();
   clearTimeout(el._mvT);el._mvT=setTimeout(()=>{el.classList.remove('moving','mv-'+id);el.querySelectorAll('.mvfx').forEach(x=>x.remove())},m.dur+150);
   return m.dur;
 }
@@ -964,6 +1046,83 @@ G.oneMore=hi=>()=>picify(addQ(rnd(1,hi),1));
 G.picAdd=max=>()=>picAddQ(max);
 G.picDouble=max=>()=>{const a=rnd(1,max);return picify(addQ(a,a))};
 G.bond=t=>()=>bondQ(t);
+
+/* ---- subtraction ---- */
+const SUB_THEMES=[['🐰','bunnies','hop away'],['🐟','fish','swim away'],['🎈','balloons','float away'],['🦋','butterflies','fly away'],['🐥','chicks','run off'],['🍪','cookies','get eaten']];
+function subQ(a,b){return{op:'−',a,b,ans:a-b,res:a-b,text:`${a} − ${b}`,key:(a<=20&&b<=10)?'s'+a+'_'+b:null}}
+function picSubQ(max,bs){const a=rnd(2,max),b=bs?pick(bs):rnd(1,a-1),[e,t,v]=pick(SUB_THEMES),q=subQ(a,b);q.kind='picsub';q.emo=e;q.thing=t;q.verb=v;q.small=true;q.say=`${a} ${t}. ${b} ${v}. How many are left?`;return q}
+function hideQ(t){const v=rnd(1,t-1),q=missingAddQ(v,t);q.kind='hide';q.emo='🐰';q.small=true;q.say=`${t} bunnies live in the burrow. ${v} are outside. How many are hiding inside?`;return q}
+function subMissQ(max){const a=rnd(6,max),b=rnd(1,Math.min(10,a-1)),c=a-b;return{op:'−',a,b,ans:b,res:c,missing:true,text:`${a} − ? = ${c}`,mtext:`${a} − □ = ${c}`,key:(a<=20&&b<=10)?'s'+a+'_'+b:null}}
+function familyQ(){const x=rnd(2,9),b=rnd(2,9),t=x+b;return{op:'−',kind:'family',a:t,b,ans:x,res:x,text:`${x} + ${b} = ${t}, so ${t} − ${b}`,disp:`${x} + ${b} = ${t}<br>so ${t} − ${b} = □`,long:true,key:(t<=20&&b<=10)?'s'+t+'_'+b:null}}
+function wordSubQ(big){
+  const q=big?pick([G.d2d2s,G.d2d2sr])():G.sub20();const {a,b}=q,c=catName();
+  q.word=pick([`${c} had ${a} fish treats and ate ${b}. How many treats are left?`,
+    `There were ${a} kittens on the bridge. ${b} went home. How many kittens are still there?`,
+    `A spell book has ${a} pages. ${c} has read ${b} of them. How many pages are left?`,
+    `${a} balloons were at the party, but ${b} floated away! How many balloons are left?`,
+    `${c} has ${a} stickers and gives ${b} to a friend. How many stickers are left?`,
+    `${c} has ${a} yarn balls. A friend has ${b}. How many more does ${c} have?`]);
+  return q;
+}
+/* ---- division ---- */
+function divQ(t,m){return{op:'÷',a:t*m,b:t,ans:m,res:m,text:`${t*m} ÷ ${t}`,key:(t<=12&&m<=12)?'d'+t+'_'+m:null}}
+function shareQ(kmin,kmax,mmax){const k=rnd(kmin,kmax),m=rnd(1,mmax),[e,t]=pick(THINGS),q=divQ(k,m);q.kind='share';q.emo=e;q.thing=t;q.small=k*m<=20;if(band()==='little'){q.disp='Each cat gets □';q.long=true}q.say=`Share ${k*m} ${t} fairly between ${k} cats. How many does each cat get?`;return q}
+function halfQ(max){const m=rnd(1,Math.floor(max/2)),[e,t]=pick(THINGS),q=divQ(2,m);q.kind='half';q.emo=e;q.thing=t;q.small=true;q.text=`Half of ${2*m}`;q.disp=`Half of ${2*m} = □`;q.say=`What is half of ${2*m}?`;return q}
+function groupQ(bs,mmax){const b=pick(bs),m=rnd(2,mmax),[e,t]=pick(THINGS),q=divQ(b,m);q.kind='grouping';q.emo=e;q.thing=t;q.say=`${b*m} ${t}. Put ${b} in each bag. How many bags do you need?`;return q}
+function divFlipQ(ts){const t=pick(ts),m=rnd(2,10),q=divQ(t,m);q.kind='divflip';q.text=`${t} × ${m} = ${t*m}, so ${t*m} ÷ ${t}`;q.disp=`${t} × ${m} = ${t*m}<br>so ${t*m} ÷ ${t} = □`;q.long=true;return q}
+function divMissQ(ts){const t=pick(ts),m=rnd(2,10);return{op:'÷',a:t*m,b:t,ans:t,res:m,missing:true,text:`${t*m} ÷ ? = ${m}`,mtext:`${t*m} ÷ □ = ${m}`,key:'d'+t+'_'+m}}
+function remQ(bs){const b=pick(bs),full=rnd(1,9),r=rnd(1,b-1),n=b*full+r,[e,t]=pick(THINGS),askFull=Math.random()<.35;
+  return{op:'÷',kind:'rem',a:n,b,full,r,ans:askFull?full:r,askFull,emo:e,thing:t,long:true,key:null,
+    text:`${n} ${t} in bags of ${b}. ${askFull?'How many full bags?':'How many left over?'}`,
+    disp:`${n} ${t} go into bags of ${b}.<br>${askFull?'How many full bags? □':'How many are left over? □'}`}}
+function wordDivQ(ts){
+  const t=pick(ts),m=rnd(2,10),q=divQ(t,m),n=t*m,c=catName();
+  q.word=pick([`${n} fish treats are shared equally between ${t} cats. How many does each cat get?`,
+    `${n} cupcakes go into boxes of ${t}. How many boxes are needed?`,
+    `${c} has ${n} crystals and puts ${t} in each bag. How many bags is that?`,
+    `${t} kittens share ${n} yarn balls fairly. How many does each kitten get?`,
+    `There are ${n} chairs at the Cat Concert, in rows of ${t}. How many rows are there?`]);
+  return q;
+}
+/* ---- two-step problems mixing operations ---- */
+function twoStepQ(){
+  const c=catName(),T=[
+   ()=>{const a=rnd(2,6),b=rnd(2,6),e=rnd(1,a*b-1);return{w:`${c} has ${a} bags with ${b} fish in each. ${c} eats ${e} of them. How many fish are left?`,ans:a*b-e,h:`First find how many fish: ${a} × ${b}. Then take away ${e}.`,eq:`${a} × ${b} = ${a*b}, then ${a*b} − ${e} = ${a*b-e}`}},
+   ()=>{const a=rnd(2,5),b=rnd(3,10),e=rnd(2,15);return{w:`You buy ${a} packs of ${b} stickers. You already had ${e}. How many stickers do you have now?`,ans:a*b+e,h:`First: ${a} × ${b} stickers in the packs. Then add the ${e} you had.`,eq:`${a} × ${b} = ${a*b}, then ${a*b} + ${e} = ${a*b+e}`}},
+   ()=>{const k=rnd(2,5),m=rnd(2,6),n=k*m,x=rnd(1,n-1);return{w:`${c} catches ${x} fish and a friend catches ${n-x}. They share them equally between ${k} cats. How many does each cat get?`,ans:m,h:`First add the fish: ${x} + ${n-x}. Then share between ${k}.`,eq:`${x} + ${n-x} = ${n}, then ${n} ÷ ${k} = ${m}`}},
+   ()=>{const a=rnd(2,5),b=rnd(2,9),sv=a*b+rnd(1,30);return{w:`You have ${sv} yarn. You buy ${a} hats that cost ${b} yarn each. How much yarn is left?`,ans:sv-a*b,h:`First find the cost: ${a} × ${b}. Then take it away from ${sv}.`,eq:`${a} × ${b} = ${a*b}, then ${sv} − ${a*b} = ${sv-a*b}`}},
+   ()=>{const r=rnd(3,8),k=rnd(3,9),e=rnd(1,r*k-1);return{w:`The Cat Concert has ${r} rows of ${k} seats. ${e} seats are empty. How many cats are sitting down?`,ans:r*k-e,h:`First find all the seats: ${r} × ${k}. Then take away the ${e} empty ones.`,eq:`${r} × ${k} = ${r*k}, then ${r*k} − ${e} = ${r*k-e}`}},
+   ()=>{const k=rnd(2,6),m=rnd(2,8),g=rnd(2,9);return{w:`${k*m} cupcakes are shared between ${k} cats. Then each cat gets ${g} more. How many cupcakes does each cat have now?`,ans:m+g,h:`First share: ${k*m} ÷ ${k}. Then add ${g}.`,eq:`${k*m} ÷ ${k} = ${m}, then ${m} + ${g} = ${m+g}`}}];
+  const t=pick(T)();return{op:'two',kind:'two',ans:t.ans,word:t.w,text:t.w,h:t.h,eq:t.eq,key:null};
+}
+Object.assign(G,{
+  picSub:max=>()=>picSubQ(max),
+  picSub01:max=>()=>picSubQ(max,[0,1]),
+  hide:max=>()=>hideQ(rnd(3,max)),
+  sub10:()=>{const a=rnd(2,10);return subQ(a,rnd(1,a-1))},
+  countBack:()=>{const a=rnd(11,19);return subQ(a,rnd(1,3))},
+  back10:()=>{const a=rnd(11,19);return subQ(a,a-10)},
+  bridgeBack:()=>{const a=rnd(11,18),o=a-10;return subQ(a,rnd(o+1,9))},
+  sub20:()=>{const a=rnd(6,20);return subQ(a,rnd(1,Math.min(10,a-1)))},
+  subMiss:max=>()=>subMissQ(max),
+  family:()=>familyQ(),
+  tensSub:()=>{const a=rnd(3,9)*10;return Object.assign(subQ(a,rnd(1,a/10-1)*10),{kind:'tensSub'})},
+  d2d1s:()=>{const t=rnd(1,9),o=rnd(1,9);return subQ(t*10+o,rnd(1,o))},
+  d2d1sr:()=>{const t=rnd(2,9),o=rnd(0,8);return subQ(t*10+o,rnd(o+1,9))},
+  d2d2s:()=>{const t1=rnd(3,9),o1=rnd(1,9),t2=rnd(1,t1-1),o2=rnd(0,o1);return subQ(t1*10+o1,t2*10+o2)},
+  d2d2sr:()=>{const t1=rnd(3,9),o1=rnd(0,8),t2=rnd(1,t1-1),o2=rnd(o1+1,9);return subQ(t1*10+o1,t2*10+o2)},
+  wSub:big=>()=>wordSubQ(big),
+  share:(kmin,kmax,mmax)=>()=>shareQ(kmin,kmax,mmax),
+  half:max=>()=>halfQ(max),
+  group:(bs,mmax)=>()=>groupQ(bs,mmax),
+  div:(ts,lo=1,hi=10)=>()=>divQ(pick(ts),rnd(lo,hi)),
+  divFlip:ts=>()=>divFlipQ(ts),
+  divMiss:ts=>()=>divMissQ(ts),
+  rem:bs=>()=>remQ(bs),
+  wDiv:ts=>()=>wordDivQ(ts),
+  two:()=>twoStepQ()
+});
+G.missMix=()=>pick([G.missAdd20,G.subMiss(20),G.miss([3,4,6,7,8,9]),G.divMiss([3,4,6,7,8,9])])();
 const ALL=range(2,12);
 
 /* ---------------- realms (the level map) ---------------- */
@@ -1052,7 +1211,84 @@ const REALMS=[
    {name:'Friends of 5',gen:G.bond(5),mc:true,visual:true},
    {name:'Friends of 10',gen:G.bond(10),mc:true,visual:true},
    {name:'Pond Party',gen:G.mix(G.picAdd(10),G.picDouble(5),G.bond(10)),mc:true,visual:true},
-   {name:'Ribbit',boss:true,mc:true,visual:true,gen:G.mix(G.picAdd(10),G.picAdd(10),G.bond(10),G.picDouble(5))}]}
+   {name:'Ribbit',boss:true,mc:true,visual:true,gen:G.mix(G.picAdd(10),G.picAdd(10),G.bond(10),G.picDouble(5))}]},
+ {id:'bunny',name:'Bunny Burrow',icon:'🐰',theme:'bunny',requires:['pond'],track:'Taking away · within 10',
+  intro:'Bunnies hop in and out of their burrows all day. How many are left?',
+  guardian:{name:'Grumpy Badger',e:'🦡',after:'😊',line:'Grr! Those bunnies keep hopping away and I lose count!',thanks:'Badger can count the bunnies now, and he is smiling!'},
+  levels:[
+   {name:'Hop Away to 5',gen:G.picSub(5),mc:true,visual:true},
+   {name:'Hop Away to 10',gen:G.picSub(10),mc:true,visual:true},
+   {name:'Nothing & One',gen:G.picSub01(10),mc:true,visual:true},
+   {name:'Who Is Hiding?',gen:G.hide(10),mc:true,visual:true},
+   {name:'Ten-Frame Take Away',gen:G.sub10,mc:true,visual:true},
+   {name:'Burrow Mix',gen:G.mix(G.picSub(10),G.hide(10),G.sub10),mc:true,visual:true},
+   {name:'Grumpy Badger',boss:true,mc:true,visual:true,gen:G.mix(G.picSub(10),G.hide(10),G.sub10,G.picSub01(10))}]},
+ {id:'picnic',name:'Picnic Park',icon:'🧺',theme:'picnic',requires:['bunny'],track:'Sharing · fair shares',
+  intro:'A big picnic for all the cats! Share the treats fairly so everyone gets the same.',
+  guardian:{name:'The Greedy Seagull',e:'🐦',after:'💕',line:'Squawk! I want ALL the snacks for me!',thanks:'The seagull learned to share. Now everyone has a fair picnic!'},
+  levels:[
+   {name:'Share with 2',gen:G.share(2,2,5),mc:true,visual:true},
+   {name:'Halves',gen:G.half(10),mc:true,visual:true},
+   {name:'Share with 3',gen:G.share(3,3,4),mc:true,visual:true},
+   {name:'Share with 4 & 5',gen:G.share(4,5,3),mc:true,visual:true},
+   {name:'Bags of 2',gen:G.group([2],5),mc:true,visual:true},
+   {name:'Picnic Mix',gen:G.mix(G.share(2,5,4),G.half(10),G.group([2,5],4)),mc:true,visual:true},
+   {name:'Greedy Seagull',boss:true,mc:true,visual:true,gen:G.mix(G.share(2,5,4),G.half(12),G.group([2],5))}]},
+ {id:'snow',name:'Snowpaw Peaks',icon:'❄️',theme:'snow',requires:['meadow'],track:'Subtraction · within 20',
+  intro:'Snowy mountains where snowballs roll away. Count back, jump to ten and think addition!',
+  guardian:{name:'The Snow Yeti',e:'🥶',after:'⛄',line:'Brrr… I am too cold and cross to smile. Unless you can take away?',thanks:'The Yeti warmed up and built you a snow cat!'},
+  levels:[
+   {name:'Take Away to 10',gen:G.sub10,mc:true,visual:true},
+   {name:'Count Back',gen:G.countBack,visual:true},
+   {name:'Back to Ten',gen:G.back10,visual:true},
+   {name:'Bridge Back',gen:G.bridgeBack,visual:true},
+   {name:'Think Addition',gen:G.mix(G.subMiss(20),G.sub20)},
+   {name:'Fact Families',gen:G.mix(G.family,G.sub20)},
+   {name:'Snow Yeti',boss:true,gen:G.mix(G.sub20,G.bridgeBack,G.subMiss(20),G.family,G.wSub(false))}]},
+ {id:'river',name:'Riverboat Bay',icon:'⛵',theme:'river',requires:['snow'],track:'Bigger + and − · 2-digit numbers',
+  intro:'Boats, bridges and a very crabby pirate. Add and subtract bigger numbers!',
+  guardian:{name:'Captain Crabby',e:'🦀',after:'🐚',line:'Arr! Nobody sails past me without solving my sums!',thanks:'Captain Crabby gave you his shiniest shell!'},
+  levels:[
+   {name:'Tens Away',gen:G.tensSub,mc:true,visual:true},
+   {name:'Little Leaps Back',gen:G.d2d1s},
+   {name:'Leap Back Over Ten',gen:G.d2d1sr},
+   {name:'Big Take-Away',gen:G.d2d2s},
+   {name:'Swap & Subtract',gen:G.d2d2sr},
+   {name:'Add or Take?',gen:G.mix(G.d2d2r,G.d2d2sr,G.wSub(true),G.wAdd(true))},
+   {name:'Captain Crabby',boss:true,gen:G.mix(G.d2d1sr,G.d2d2sr,G.d2d2r,G.wSub(true),G.wAdd(true))}]},
+ {id:'bakery',name:'Sharing Bakery',icon:'🧁',theme:'bakery',requires:['cloud'],track:'Division · ÷2 ÷5 ÷10',
+  intro:'Fresh cupcakes and buns! Share them fairly and pack them into bags.',
+  guardian:{name:'Chef Crumble',e:'😤',after:'🎂',line:'Hmph! My cupcakes are all in a muddle. Can you share them out?',thanks:'Chef Crumble baked you a thank-you cake!'},
+  levels:[
+   {name:'Share the Cupcakes',gen:G.share(2,5,5),mc:true,visual:true},
+   {name:'Bags of Buns',gen:G.group([2,5,10],6),mc:true,visual:true},
+   {name:'Halving Hall',gen:G.div([2],1,12),visual:true},
+   {name:'Tens & Fives',gen:G.div([10,5],1,12)},
+   {name:'Times Flip',gen:G.mix(G.divFlip([2,5,10]),G.div([2,5,10]))},
+   {name:'Missing Numbers',gen:G.mix(G.divMiss([2,5,10]),G.div([2,5,10]))},
+   {name:'Chef Crumble',boss:true,gen:G.mix(G.div([2,5,10],1,12),G.div([2,5,10],1,12),G.divMiss([2,5,10]),G.divFlip([2,5,10]),G.wDiv([2,5,10]))}]},
+ {id:'cavern',name:'Crystal Caverns',icon:'💎',theme:'cavern',requires:['star'],track:'Division · ÷3 ÷4 ÷6 ÷7 ÷8 ÷9',
+  intro:'Glittering caves full of crystals. Share them out, and find what is left over!',
+  guardian:{name:'The Rock Troll',e:'🗿',after:'💎',line:'Grumble… nobody can split my crystals fairly!',thanks:'The Rock Troll gave you his biggest crystal!'},
+  levels:[
+   {name:'Threes & Fours',gen:G.div([3,4]),mc:true,visual:true},
+   {name:'Sixes',gen:G.div([6]),visual:true},
+   {name:'Sevens & Eights',gen:G.div([7,8])},
+   {name:'Nifty Nines',gen:G.div([9])},
+   {name:'Left Overs',gen:G.rem([3,4,5,6]),visual:true},
+   {name:'Cave Stories',gen:G.mix(G.wDiv([3,4,6,7,8,9]),G.divFlip([6,7,8,9]),G.divMiss([3,4,6,7,8,9]))},
+   {name:'Rock Troll',boss:true,gen:G.mix(G.div([6,7,8,9]),G.div([3,4,6,7,8,9]),G.divMiss([6,7,8,9]),G.rem([4,5,6,7]),G.wDiv([6,7,8,9]))}]},
+ {id:'market',name:'Moonbeam Market',icon:'🏮',theme:'market',requires:['cavern'],track:'All four · + − × ÷ and two-step',
+  intro:'A busy night market under paper lanterns. Every stall needs a different kind of maths!',
+  guardian:{name:'Rascal the Raccoon',e:'🦝',after:'🪙',line:'Hee hee! I mixed up every sign in the market!',thanks:'Rascal gave back all the coins and said sorry!'},
+  levels:[
+   {name:'Plus or Minus?',gen:G.mix(G.d2d2r,G.d2d2sr,G.sub20,G.add20)},
+   {name:'Times or Share?',gen:G.mix(G.mul(ALL),G.div(ALL))},
+   {name:'Which Sign?',gen:G.mix(G.wAdd(true),G.wSub(true),G.wMul(ALL),G.wDiv(ALL))},
+   {name:'Missing Pieces',gen:G.missMix},
+   {name:'Two-Step Trades',gen:G.two},
+   {name:'Big Market Day',gen:G.mix(G.two,G.d2d2sr,G.mul([6,7,8,9,12]),G.div([6,7,8,9]),G.rem([5,6,7,8]))},
+   {name:'Rascal',boss:true,n:12,gen:G.mix(G.two,G.two,G.d2d2sr,G.d2d2r,G.mul([6,7,8,9,12]),G.div([6,7,8,9,12]),G.missMix)}]}
 ];
 const THEMES={
   home:['linear-gradient(180deg,#ffe4f1,#fff8ef)',0],
@@ -1063,7 +1299,14 @@ const THEMES={
   star:['radial-gradient(2px 2px at 20% 15%,#fff 60%,transparent),radial-gradient(1.5px 1.5px at 85% 30%,#fff 60%,transparent),radial-gradient(2px 2px at 45% 55%,#ffe7a8 60%,transparent),radial-gradient(1.5px 1.5px at 70% 80%,#fff 60%,transparent),linear-gradient(180deg,#1d1f4f,#8a4fb0)',1],
   lumen:['linear-gradient(180deg,#ffe6b8,#ffc9e4)',0],
   kitten:['linear-gradient(180deg,#ffe0cc,#fff6ea)',0],
-  pond:['linear-gradient(180deg,#c8f0ff,#e8ffe0)',0]
+  pond:['linear-gradient(180deg,#c8f0ff,#e8ffe0)',0],
+  bunny:['linear-gradient(180deg,#e2f6cf,#fff4e6)',0],
+  picnic:['linear-gradient(180deg,#fff0c4,#ffe0ec)',0],
+  snow:['radial-gradient(3px 3px at 15% 20%,#fff 60%,transparent),radial-gradient(3px 3px at 80% 35%,#fff 60%,transparent),radial-gradient(2px 2px at 45% 70%,#fff 60%,transparent),linear-gradient(180deg,#d6ecff,#f6fbff)',0],
+  river:['linear-gradient(180deg,#b6e6ff,#d6fff1)',0],
+  bakery:['linear-gradient(180deg,#ffe3d1,#fff6df)',0],
+  cavern:['radial-gradient(2px 2px at 20% 25%,#a8e6ff 60%,transparent),radial-gradient(2px 2px at 75% 15%,#ffd1f5 60%,transparent),radial-gradient(2px 2px at 60% 60%,#c8ffe8 60%,transparent),linear-gradient(180deg,#2a2848,#4a5e9a)',1],
+  market:['radial-gradient(5px 5px at 14% 12%,#ffcf6b 60%,transparent),radial-gradient(5px 5px at 50% 8%,#ff8f8f 60%,transparent),radial-gradient(5px 5px at 86% 12%,#ffcf6b 60%,transparent),linear-gradient(180deg,#33204d,#b25887)',1]
 };
 const BADGES={
   first:['🐾','First Paw','Finish your first level'],
@@ -1104,13 +1347,13 @@ const lid=(r,l)=>REALMS[r].id+'-'+l;
 const totalStars=()=>REALMS.reduce((t,R,ri)=>t+R.levels.reduce((u,_,li)=>u+(S.stars[lid(ri,li)]||0),0),0);
 /* Age bands: the age a player gives picks which realms come first and how much support each question gets */
 function band(){const a=S.age||UI.tmpAge||10;return a<=6?'little':a<=8?'middle':'big'}
-const BAND_ORDER={little:['kitten','pond','meadow','cloud','moon','star','library','lumen'],middle:['meadow','cloud','moon','star','library','lumen','pond','kitten'],big:['cloud','moon','star','library','lumen','meadow']};
-const BAND_REQ={little:{pond:['kitten'],meadow:['pond'],cloud:['meadow']},middle:{},big:{}};
-const BAND_LABEL={little:'Little Paws (ages 4–6): counting and adding to 10 with pictures, tap-the-answer choices, shorter levels, questions read aloud.',middle:'Middle Paws (ages 7–8): adding to 20 first, then the times tables.',big:'Big Paws (ages 9+): times tables first, addition as a bonus realm.'};
+const BAND_ORDER={little:['kitten','pond','bunny','picnic','meadow','snow','cloud','bakery','moon','river','star','cavern','library','market','lumen'],middle:['meadow','snow','cloud','bakery','river','moon','star','cavern','library','market','lumen','kitten','pond','bunny','picnic'],big:['cloud','bakery','moon','star','cavern','library','market','lumen','meadow','snow','river']};
+const BAND_REQ={little:{pond:['kitten'],meadow:['pond'],cloud:['meadow']},middle:{market:['cavern','river']},big:{snow:[]}};
+const BAND_LABEL={little:'Little Paws (ages 4–6): counting, adding and taking away within 10, and fair sharing. All with pictures, tap-the-answer choices, shorter levels and questions read aloud.',middle:'Middle Paws (ages 7–8): adding and taking away to 20 first, then times tables, sharing and ÷2 ÷5 ÷10, then 2-digit adding and subtracting.',big:'Big Paws (ages 9+): times tables and division first, then remainders and two-step problems that mix all four operations. Addition and subtraction realms are bonus practice.'};
 function realmStarted(r){return REALMS[r].levels.some((_,i)=>S.stars[lid(r,i)])}
 function realmList(){const L=BAND_ORDER[band()].map(id=>REALMS.findIndex(R=>R.id===id)).filter(i=>i>=0);REALMS.forEach((_,i)=>{if(!L.includes(i)&&realmStarted(i))L.push(i)});return L}
 function realmReq(R){return BAND_REQ[band()][R.id]||R.requires}
-function isBonus(R){const b=band();return b==='big'?R.id==='meadow':b==='middle'?(R.id==='kitten'||R.id==='pond'):false}
+function isBonus(R){const b=band();return b==='big'?['meadow','snow','river'].includes(R.id):b==='middle'?['kitten','pond','bunny','picnic'].includes(R.id):false}
 function realmUnlocked(r){if(realmStarted(r))return true;return realmReq(REALMS[r]).every(id=>{const i=REALMS.findIndex(x=>x.id===id);return !!S.stars[lid(i,REALMS[i].levels.length-1)]})}
 function pickStartRealm(){const L=realmList();const c=L.find(i=>realmUnlocked(i)&&currentLevel(i)>=0);return c!=null?c:L[0]}
 function levelUnlocked(r,l){return realmUnlocked(r)&&(l===0||!!S.stars[lid(r,l-1)])}
@@ -1130,8 +1373,8 @@ function recordFact(q,good){
 }
 function dueFacts(){const t=dayKey();return Object.entries(S.facts).filter(([,f])=>f.due<=t).sort((a,b)=>a[1].box-b[1].box).map(e=>e[0])}
 function weakFacts(){return Object.entries(S.facts).sort((a,b)=>(a[1].box-b[1].box)||(b[1].wrong-a[1].wrong)).map(e=>e[0])}
-function factToQ(k){const [a,b]=k.slice(1).split('_').map(Number);return k[0]==='m'?mulQ(a,b):addQ(a,b)}
-function factLabel(k){const [a,b]=k.slice(1).split('_').map(Number);return k[0]==='m'?`${a} × ${b}`:`${a} + ${b}`}
+function factToQ(k){const [a,b]=k.slice(1).split('_').map(Number);return k[0]==='m'?mulQ(a,b):k[0]==='s'?subQ(a,b):k[0]==='d'?divQ(a,b):addQ(a,b)}
+function factLabel(k){const [a,b]=k.slice(1).split('_').map(Number);return k[0]==='m'?`${a} × ${b}`:k[0]==='s'?`${a} − ${b}`:k[0]==='d'?`${a*b} ÷ ${a}`:`${a} + ${b}`}
 function crystalLvl(t){let s=0;for(const m of range(1,12)){const f=S.facts[fk('m',t,m)];if(f)s+=Math.min(f.box,3)/3}return s/12}
 function crystalsHTML(){
   const lv=ALL.map(t=>{const p=crystalLvl(t);return{t,l:p>=1?3:p>=.5?2:p>0?1:0}});const full=lv.filter(x=>x.l===3).length;
@@ -1146,7 +1389,40 @@ function checkCrystals(q){
 function tableStrong(t){return range(1,12).filter(m=>{const f=S.facts[fk('m',t,m)];return f&&f.box>=3}).length}
 
 /* ---------------- teaching: hints, strategies, pictures ---------------- */
+function tipSub(q,full){
+  const {a,b}=q,d=a-b;
+  if(q.kind==='picsub')return full?`${a} take away ${b} leaves ${d}. ${a} − ${b} = ${d}`:(b===0?'Nothing went away! So nothing changes.':'Cover the ones that went away with your finger. Count the ones that are left!');
+  if(q.kind==='family')return full?`${d} + ${b} = ${a}, so ${a} − ${b} = ${d}.`:'Adding and taking away are a family. Look at the first fact!';
+  if(q.missing)return full?`${a} − ${b} = ${d}, so the missing number is ${b}.`:`Count up from ${d} to ${a}. How many jumps?`;
+  if(b===0)return full?`Taking away 0 leaves ${a}.`:'Taking away 0 changes nothing!';
+  if(a<=20){
+    if(b<=3)return full?`Count back ${b}: ${range(1,b).map(i=>a-i).join(', ')}. So ${a} − ${b} = ${d}.`:`Count back ${b} from ${a}. Start at ${a} and say the numbers going down.`;
+    if(a>10&&d===10)return full?`Take away the ${b} ones and you land on 10!`:`${a} has ${a-10} ones. What is left if they all go away?`;
+    if(a>10&&d<10){const o=a-10,r=b-o;return full?`${a} − ${o} = 10, then 10 − ${r} = ${d}.`:`Jump back to 10 first: ${a} − ${o} = 10. Then take away ${r} more.`}
+    return full?`${b} + ${d} = ${a}, so ${a} − ${b} = ${d}.`:`Think addition: ${b} + ? = ${a}`;
+  }
+  if(a%10===0&&b%10===0)return full?`${a/10} tens − ${b/10} tens = ${d/10} tens = ${d}.`:`Think in tens: ${a/10} tens take away ${b/10} tens.`;
+  if(b<10){const o=a%10;if(b<=o)return full?`Just the ones: ${o} − ${b} = ${o-b}. So ${a} − ${b} = ${d}.`:`Only the ones change: ${o} − ${b} = ?`;return full?`${a} − ${o} = ${a-o}, then ${a-o} − ${b-o} = ${d}.`:`Jump back to ${a-o} first (take away ${o}). Then take away ${b-o} more.`}
+  const tb=b-b%10,ob=b%10;
+  if(!ob)return full?`${a} − ${tb} = ${d}. Only the tens change!`:`Only the tens change: take away ${tb/10} tens.`;
+  return full?`${a} − ${tb} = ${a-tb}, then ${a-tb} − ${ob} = ${d}.`:`Take away the tens first: ${a} − ${tb} = ${a-tb}. Then take away the ${ob} ones.`;
+}
+function tipDiv(q,full){
+  const n=q.a,k=q.b,m=q.kind==='rem'?q.full:q.res;
+  if(q.kind==='share')return full?`${n} shared between ${k} cats is ${m} each, because ${k} × ${m} = ${n}.`:'Give one to each cat, then another, until they are all gone!';
+  if(q.kind==='half')return full?`Half of ${n} is ${m}, because ${m} + ${m} = ${n}.`:`Half means 2 equal groups. What number doubled makes ${n}?`;
+  if(q.kind==='grouping')return full?`Counting in ${k}s: ${range(1,m).map(i=>i*k).join(', ')}. That is ${m} bags!`:`Count in ${k}s until you reach ${n}. How many jumps?`;
+  if(q.kind==='rem')return full?`${k} × ${m} = ${k*m}. ${n} − ${k*m} = ${q.r} left over. So ${m} full bags and ${q.r} left over.`:`Count in ${k}s and get as close to ${n} as you can without going over.`;
+  if(q.kind==='divflip')return full?`${k} × ${m} = ${n}, so ${n} ÷ ${k} = ${m}.`:'Times and divide are a family. Use the times fact at the top!';
+  if(q.missing)return full?`${n} ÷ ${k} = ${m}, so the missing number is ${k}.`:`What number times ${m} makes ${n}?`;
+  const T={2:`÷ 2 means half. What is half of ${n}?`,10:`How many tens make ${n}?`,5:`Count in 5s up to ${n}. How many fives?`,4:`Halve ${n}, then halve again!`,3:`Count in 3s up to ${n}.`,9:`Use your 9s: 9 × what = ${n}?`};
+  return full?`${k} × ${m} = ${n}, so ${n} ÷ ${k} = ${m}.`:(T[k]||`Think times tables: ${k} × ? = ${n}`);
+}
 function tip(q,full){
+  if(q.kind==='two')return full?q.eq+'.':`Do it in two steps. ${q.h}`;
+  if(q.op==='−')return tipSub(q,full);
+  if(q.op==='÷')return tipDiv(q,full);
+  if(q.kind==='hide')return full?`${q.a} + ${q.b} = ${q.a+q.b}, so ${q.b} are hiding.`:`Count up from ${q.a} to ${q.a+q.b}. How many more?`;
   if(q.kind==='count')return full?`Let's count together: ${range(1,q.ans).join(', ')}. There are ${q.ans} ${q.thing}!`:'Touch each one with your finger and count out loud. Start at 1!';
   if(q.kind==='next')return full?`${q.n}, then ${q.ans}! ${q.ans} comes after ${q.n}.`:`Count up and stop after ${q.n}: ${range(1,q.n).join(', ')}…`;
   if(q.kind==='more')return full?`${Math.max(q.a,q.b)} is more than ${Math.min(q.a,q.b)}. Its line is longer!`:'Look at the two lines of pictures. Which line is longer?';
@@ -1201,7 +1477,25 @@ function tipAdd(q,full){
   const h=(ta===0||tb===0)?`Tens: ${T}. Ones: ${oa} + ${ob} = ${O}.`:`Tens first: ${ta} + ${tb} = ${T}. Then ones: ${oa} + ${ob} = ${O}.`;
   return full?`${h} Together: ${T} + ${O} = ${s}.`:`${h} Now put them together!`;
 }
+const pe=(e,n,cls='')=>Array.from({length:n},()=>`<i class="pe ${cls}">${e}</i>`).join('');
+function divArr(q,reveal){const r=q.b,c=q.res;if(r*c>60)return '';let cells='';for(let i=0;i<r*c;i++)cells+='<i></i>';return `<div class="vis"><div class="dots" style="grid-template-columns:repeat(${c},var(--d))">${cells}</div><div class="cap">${q.a} in ${r} equal rows${reveal?` → ${c} in each row`:''}</div></div>`}
 function visual(q,reveal){
+  if(q.kind==='picsub')return `<div class="vis"><div class="picadd" style="font-size:${cs(36)}px"><span>${pe(q.emo,q.ans)}${pe(q.emo,q.b,'gone')}</span></div><div class="cap">${reveal?`${q.a} take away ${q.b} leaves ${q.ans}`:`${q.a} ${q.thing}, ${q.b} ${q.verb}`}</div></div>`;
+  if(q.kind==='hide')return `<div class="vis"><div class="picadd" style="font-size:${cs(36)}px"><span>${pe(q.emo,q.a)}</span><b>+</b><span class="burrow">${reveal?pe(q.emo,q.b):'🕳️❓'}</span></div><div class="cap">${q.a+q.b} bunnies altogether</div></div>`;
+  if(q.kind==='share'||q.kind==='half'){const k=q.b,m=q.res;if(!reveal)return `<div class="vis"><div class="picadd" style="font-size:${cs(30)}px"><span style="max-width:8em">${pe(q.emo,q.a)}</span></div><div class="plates">${'<b>🐱</b>'.repeat(k)}</div><div class="cap">Share ${q.a} ${q.thing} fairly between ${k} cats</div></div>`;
+    return `<div class="vis"><div class="grps">${range(1,k).map(()=>`<div class="g1 plate"><b>🐱</b>${q.emo.repeat(m)}</div>`).join('')}</div><div class="cap">${m} each</div></div>`}
+  if(q.kind==='grouping'){if(!reveal)return `<div class="vis"><div class="picadd" style="font-size:${cs(24)}px"><span style="max-width:10em">${q.emo.repeat(q.a)}</span></div><div class="cap">Put ${q.b} in each bag</div></div>`;
+    return `<div class="vis"><div class="grps">${range(1,q.res).map(()=>`<div class="g1">${q.emo.repeat(q.b)}</div>`).join('')}</div><div class="cap">${q.res} bags of ${q.b}</div></div>`}
+  if(q.kind==='rem'){if(!reveal)return '';return `<div class="vis"><div class="grps">${range(1,q.full).map(()=>`<div class="g1">${q.emo.repeat(q.b)}</div>`).join('')}<div class="g1 left">${q.emo.repeat(q.r)}</div></div><div class="cap">${q.full} full bag${q.full>1?'s':''}, ${q.r} left over</div></div>`}
+  if(q.op==='÷'){if((q.kind==='divflip'||q.missing)&&!reveal)return '';return divArr(q,reveal)}
+  if(q.op==='−'){
+    if((q.missing||q.kind==='family')&&!reveal)return '';
+    const a=q.a,b=q.b;
+    if(a<=20){const frames=a>10?2:1;let html='',k=0;for(let f=0;f<frames;f++){let cells='';for(let i=0;i<10;i++,k++)cells+=`<i class="${k<a-b?'a':k<a?'a x':''}"></i>`;html+=`<div class="tf">${cells}</div>`}
+      return `<div class="vis"><div class="tfwrap">${html}</div><div class="cap">${a} take away ${b}</div></div>`}
+    if(a%10===0&&b%10===0)return `<div class="vis"><div class="b10"><div class="grp ga">${'<i class="rod"></i>'.repeat((a-b)/10)}${'<i class="rod gone"></i>'.repeat(b/10)}</div></div><div class="cap">${a/10} tens take away ${b/10} tens</div></div>`;
+    return '';
+  }
   if(q.kind==='count'){let h='';for(let i=0;i<q.ans;i+=5)h+='<div>'+range(i+1,Math.min(q.ans,i+5)).map(k=>`<span>${q.emo}${reveal?`<small>${k}</small>`:''}</span>`).join('')+'</div>';return `<div class="vis"><div class="cgrid" style="font-size:${cs(46)}px">${h}</div></div>`}
   if(q.kind==='next')return `<div class="vis"><div class="track">${range(1,10).map(k=>`<b class="${k===q.n?'hl':''}${k===q.ans?(reveal?' hl':' q'):''}">${k===q.ans&&!reveal?'?':k}</b>`).join('')}</div></div>`;
   if(q.kind==='more')return `<div class="vis"><div class="morerows" style="font-size:${cs(28)}px"><div><b>${q.a}</b><span>${q.emo.repeat(q.a)}</span></div><div><b>${q.b}</b><span>${q.emo.repeat(q.b)}</span></div></div><div class="cap">The longer line has more!</div></div>`;
@@ -1231,13 +1525,13 @@ function visual(q,reveal){
   }
   return '';
 }
-function plainEq(q){if(q.kind==='count')return `${q.ans} ${q.thing}`;if(q.kind==='next')return `${q.n} → ${q.ans}`;if(q.kind==='more')return `${q.ans} is more`;if(q.kind==='groups')return `${q.a} × ${q.b} = ${q.ans}`;if(q.op==='+3')return `${q.nums.join(' + ')} = ${q.ans}`;return `${q.a} ${q.op} ${q.b} = ${q.op==='×'?q.a*q.b:q.a+q.b}`}
+function plainEq(q){if(q.kind==='two')return q.eq;if(q.kind==='rem')return `${q.a} ÷ ${q.b} = ${q.full} r ${q.r}`;if(q.kind==='half')return `Half of ${q.a} = ${q.res}`;if(q.res!=null)return `${q.a} ${q.op} ${q.b} = ${q.res}`;if(q.kind==='count')return `${q.ans} ${q.thing}`;if(q.kind==='next')return `${q.n} → ${q.ans}`;if(q.kind==='more')return `${q.ans} is more`;if(q.kind==='groups')return `${q.a} × ${q.b} = ${q.ans}`;if(q.op==='+3')return `${q.nums.join(' + ')} = ${q.ans}`;return `${q.a} ${q.op} ${q.b} = ${q.op==='×'?q.a*q.b:q.a+q.b}`}
 function qPlain(q){if(q.disp)return q.disp.replace(/<br>/g,' ').replace('□','?');return q.missing?q.text:q.text+' = ?'}
 function choicesFor(q){
   if(q.kind==='more')return shuffle([q.a,q.b]);
   if(q.small){const set=new Set([q.ans]);for(const v of shuffle([q.ans+1,q.ans-1,q.ans+2,q.ans-2,q.ans+3])){if(set.size>=4)break;if(v>=0&&v!==q.ans)set.add(v)}let k=4;while(set.size<4)set.add(q.ans+k++);return shuffle([...set])}
   const ans=q.ans,set=new Set([ans]);
-  const c=(q.op==='×'&&!q.missing)?[(q.a+1)*q.b,(q.a-1)*q.b,q.a*(q.b+1),q.a*(q.b-1),ans+1,ans-1,q.a+q.b]:[ans+1,ans-1,ans+2,ans-2,ans+10,ans-10];
+  const c=(q.op==='×'&&!q.missing)?[(q.a+1)*q.b,(q.a-1)*q.b,q.a*(q.b+1),q.a*(q.b-1),ans+1,ans-1,q.a+q.b]:q.op==='−'?[ans+1,ans-1,ans+10,ans-10,ans+2,ans-2,q.a+q.b]:q.op==='÷'?[ans+1,ans-1,ans+2,ans-2,q.b,ans*2]:[ans+1,ans-1,ans+2,ans-2,ans+10,ans-10];
   for(const v of shuffle(c)){if(set.size>=4)break;if(v>0&&v!==ans)set.add(v)}
   let k=3;while(set.size<4)set.add(ans+k++);
   return shuffle([...set]);
@@ -1280,10 +1574,10 @@ function tabsNav(){
 /* ---------------- MAP ---------------- */
 function companionLine(){
   const r=rankInfo(),due=dueFacts().length,nm=S.name;
-  if(band()==='little')return pick([`Hi ${nm}! Let's count together!`,'Tap me for a purr! 💖','Tap 🔊 to hear the question again.','Mistakes are OK. They help your brain grow!','Earn yarn and buy me a dance move! 💃','Count slowly and touch each one.',`I love playing with you, ${nm}!`]);
+  if(band()==='little')return pick([`Hi ${nm}! Let's count together!`,'Tap me for a purr! 💖','Tap 🔊 to hear the question again.','Mistakes are OK. They help your brain grow!','Earn yarn and buy me a dance move! 💃','Count slowly and touch each one.','Sharing means everyone gets the same. Fair is fair!','Taking away? Cover them with your finger!',`I love playing with you, ${nm}!`]);
   if(r.next&&Math.random()<.35)return `Only ${r.next.min-totalStars()} more ⭐ until you become a ${r.next.name}!`;
   if(due>=3&&Math.random()<.4)return `${due} facts in your Review Garden are ready to bloom 🌷`;
-  return pick([`Hi ${nm}! Ready to light up some crystals?`,'Mistakes help your brain grow. Every one teaches you something!','Tip: for × 9, do × 10 and take one away!','Tip: for × 4, double it… then double again!','Tip: for × 6, do × 5 and add one more group!','Tip: for × 8, double, double, then double again!','Tip: 11 × 4 = 44, 11 × 7 = 77… the twin-digit trick!','Tip: for × 12, do × 10, then add × 2.','Tip: 7 × 8 = 56… just remember 5, 6, 7, 8!','Light up your Times Table Crystals in the Dojo! 💎','A little practice every day beats a lot once a week.','Will you draw something for me in the Studio? 🎨',`I'm so proud to be your cat, ${nm}!`,'Tip: 3 × 7 is the same as 7 × 3. Flip it if it helps!','Tap me for a purr! 💖','Buy me some new dance moves in the Closet! 💃']);
+  return pick([`Hi ${nm}! Ready to light up some crystals?`,'Mistakes help your brain grow. Every one teaches you something!','Tip: for × 9, do × 10 and take one away!','Tip: for × 4, double it… then double again!','Tip: for × 6, do × 5 and add one more group!','Tip: for × 8, double, double, then double again!','Tip: 11 × 4 = 44, 11 × 7 = 77… the twin-digit trick!','Tip: for × 12, do × 10, then add × 2.','Tip: 7 × 8 = 56… just remember 5, 6, 7, 8!','Light up your Times Table Crystals in the Dojo! 💎','A little practice every day beats a lot once a week.','Will you draw something for me in the Studio? 🎨',`I'm so proud to be your cat, ${nm}!`,'Tip: 3 × 7 is the same as 7 × 3. Flip it if it helps!','Tap me for a purr! 💖','Buy me some new dance moves in the Closet! 💃','Tip: 13 − 5? Jump back to 10 first, then take away 2 more!','Tip: ÷ is × turned around. 24 ÷ 4? Think 4 × ? = 24.','Tip: taking away 9? Take away 10, then add 1 back!','Tip: half of a number is the same as ÷ 2.']);
 }
 function mapView(){
   if(!realmList().includes(UI.realm))UI.realm=pickStartRealm();
@@ -1327,10 +1621,12 @@ function practiceView(){
   const garden=`<div class="pcard"><div class="pi">🌷</div><div class="grow"><h3>Review Garden</h3><p>${gtxt}</p></div><button class="btn mint" data-act="garden" ${seen<5?'disabled':''}>Water</button></div>`;
   const light=`<div class="pcard"><div class="pi">⚡</div><div class="grow"><h3>Lightning Paws</h3><p>${b==='little'?'60 seconds. How many can you get?':b==='middle'?'60 seconds of quick maths.':'60 seconds of times tables.'} Your best: <b>${S.stats.lightningBest}</b></p></div><button class="btn sun" data-act="lightning">Go!</button></div>`;
   const quick=(k,i,t,p)=>`<div class="pcard"><div class="pi">${i}</div><div class="grow"><h3>${t}</h3><p>${p}</p></div><button class="btn" data-act="quick" data-k="${k}">Play</button></div>`;
+  const ddojo=`<div class="pcard col"><div class="row" style="justify-content:flex-start"><div class="pi">➗</div><div class="grow"><h3>Division Dojo</h3><p>Train sharing facts. Each one is a times-table fact turned around!</p></div></div>
+  <div class="tables">${range(2,12).map(t=>{const k=divStrong(t);return `<button class="tbtn" data-act="dtable" data-t="${t}">÷${t}<small>${k}/12 strong</small><span class="minibar"><i style="width:${k/12*100}%"></i></span></button>`}).join('')}</div></div>`;
   let h='<h2 class="sec">Practice</h2>';
-  if(b==='little')h+=quick('count','🧸','Counting','Count kittens, fish and stars up to 10.')+quick('add10','🐸','Adding to 10','Put two groups together with pictures.')+garden+light;
-  else if(b==='middle')h+=quick('add20','🌸','Adding to 20','Make-10, doubles and more.')+dojo+garden+light;
-  else h+=dojo+garden+light;
+  if(b==='little')h+=quick('count','🧸','Counting','Count kittens, fish and stars up to 10.')+quick('add10','🐸','Adding to 10','Put two groups together with pictures.')+quick('sub10','🐰','Taking away','Some hop away. How many are left?')+quick('share','🧺','Sharing','Share treats fairly between cats.')+garden+light;
+  else if(b==='middle')h+=quick('add20','🌸','Adding to 20','Make-10, doubles and more.')+quick('sub20','❄️','Taking away to 20','Count back, jump to 10, think addition.')+quick('div','🧁','Sharing & dividing','Share, make bags, and ÷2 ÷5 ÷10.')+dojo+garden+light;
+  else h+=dojo+ddojo+quick('mixed4','🏮','All four mixed','+ − × ÷ and two-step stories.')+garden+light;
   return h;
 }
 
@@ -1338,9 +1634,9 @@ function practiceView(){
 function closetView(){
   return `<h2 class="sec">Cat Closet</h2>
   <div class="closet-hero"><div id="closetCat">${catHTML(cs(190),'happy',{cls:'idle'})}</div><div><div class="catname">${esc(catName())}</div><p class="tiny">Spend yarn 🧶 on outfits and dance moves.</p><button class="chip" data-act="rename" style="margin-top:6px">✏️ Rename</button></div></div>
-  <h3 class="sub">Dance moves 💃</h3><p class="tiny" style="margin:-4px 4px 8px">Your cat does these when you get answers right. Tap ▶ to watch one for free!</p><div class="items">${MOVES.map(moveCard).join('')}</div>
-  <h3 class="sub">Fur colour</h3><div class="swatches">${Object.entries(FURS).map(([id,f])=>{const own=S.owned.includes('fur_'+id);return `<button class="sw ${S.fur===id?'on':''}" data-act="fur" data-id="${id}"><span class="dot" style="background:${f.css||f.c}"></span>${f.name}<small>${own?(S.fur===id?'wearing':'owned'):'🧶 '+f.price}</small></button>`}).join('')}</div>
-  ${Object.entries(SLOTS).map(([slot,label])=>`<h3 class="sub">${label}</h3><div class="items">${ITEMS.filter(i=>i.slot===slot).map(itemCard).join('')}</div>`).join('')}`;
+  <h3 class="sub">Dance moves 💃</h3><p class="tiny" style="margin:-4px 4px 8px">Your cat does these when you get answers right. Tap ▶ to watch one for free!</p><div class="items">${MOVES.slice().sort((a,b)=>a.price-b.price).map(moveCard).join('')}</div>
+  <h3 class="sub">Fur colour</h3><div class="swatches">${Object.entries(FURS).sort((a,b)=>a[1].price-b[1].price).map(([id,f])=>{const own=S.owned.includes('fur_'+id);return `<button class="sw ${S.fur===id?'on':''}" data-act="fur" data-id="${id}"><span class="dot" style="background:${f.css||f.c}"></span>${f.name}<small>${own?(S.fur===id?'wearing':'owned'):'🧶 '+f.price}</small></button>`}).join('')}</div>
+  ${Object.entries(SLOTS).map(([slot,label])=>`<h3 class="sub">${label}</h3><div class="items">${ITEMS.filter(i=>i.slot===slot).sort((a,b)=>a.price-b.price).map(itemCard).join('')}</div>`).join('')}`;
 }
 function moveCard(m){const own=!m.price||S.owned.includes('mv_'+m.id);return `<div class="item ${own?'worn':''}"><div class="ie">${m.e}</div><div class="in">${m.name}</div><div class="row" style="gap:6px"><button class="chip" data-act="mvTry" data-id="${m.id}" aria-label="Watch ${m.name}">▶</button>${own?'<span class="tiny">✓ yours</span>':`<button class="chip" data-act="mvBuy" data-id="${m.id}">🧶 ${m.price}</button>`}</div></div>`}
 function moveStage(id){const m=MOVE[id];if(!m)return;const own=!m.price||S.owned.includes('mv_'+id);
@@ -1453,9 +1749,10 @@ function parentGate(){
   b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('holding');t=setTimeout(()=>{closeModal();UI.tab='parents';UI.screen='home';render();scrollTo(0,0)},2000)});
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>{clearTimeout(t);b.classList.remove('holding')}));
 }
-function heat(prefix,max){
-  let h=`<table class="heat"><tr><th>${prefix==='m'?'×':'+'}</th>${range(1,max).map(c=>`<th>${c}</th>`).join('')}</tr>`;
-  for(const r of range(1,max)){h+=`<tr><th>${r}</th>`;for(const c of range(1,max)){const f=S.facts[fk(prefix,r,c)];const cls=!f?'u':f.box>=3?'g':(f.box>=1?'y':'r');h+=`<td class="${cls}" title="${r} ${prefix==='m'?'×':'+'} ${c}${f?` — ${f.right} right, ${f.wrong} missed`:''}"></td>`}h+='</tr>'}
+function heat(prefix,max,kf){
+  kf=kf||((r,c)=>fk(prefix,r,c));const sym=prefix==='m'?'×':prefix==='d'?'÷':'+';
+  let h=`<table class="heat"><tr><th>${sym}</th>${range(1,max).map(c=>`<th>${c}</th>`).join('')}</tr>`;
+  for(const r of range(1,max)){h+=`<tr><th>${r}</th>`;for(const c of range(1,max)){const f=S.facts[kf(r,c)];const cls=!f?'u':f.box>=3?'g':(f.box>=1?'y':'r');h+=`<td class="${cls}" title="${prefix==='d'?`${r*c} ÷ ${r}`:`${r} ${sym} ${c}`}${f?` — ${f.right} right, ${f.wrong} missed`:''}"></td>`}h+='</tr>'}
   return h+'</table>';
 }
 function parentsView(){
@@ -1465,6 +1762,7 @@ function parentsView(){
   return `<div class="row" style="justify-content:space-between;margin-top:14px"><h2 class="sec" style="margin:0">Grown-ups corner</h2><button class="chip" data-act="tab" data-tab="map">◀ Back to game</button></div>
   <div class="pstats" style="margin-top:12px"><div><b>${Math.round(st.seconds/60)}</b><small>minutes played</small></div><div><b>${st.answered}</b><small>questions answered</small></div><div><b>${acc}%</b><small>right first try</small></div><div><b>${st.levels}</b><small>levels finished</small></div><div><b>${S.streak.count}</b><small>day streak</small></div><div><b>${dueFacts().length}</b><small>facts due for review</small></div></div>
   <h3 class="sub">Times tables mastery</h3><div class="heatwrap">${heat('m',12)}${legend}</div>
+  <h3 class="sub">Division facts mastery</h3><p class="tiny" style="margin:-4px 4px 6px">Rows: dividing by (÷2 … ÷12). Columns: the answer.</p><div class="heatwrap">${heat('d',12,(r,c)=>'d'+r+'_'+c)}${legend}</div>
   <h3 class="sub">Addition facts mastery</h3><div class="heatwrap">${heat('a',10)}${legend}</div>
   <h3 class="sub">Facts to practise together</h3><div class="notes">${weak.length?weak.map(([k,f])=>`<div><b>${factLabel(k)}</b> — missed ${f.wrong} of ${f.seen} tries</div>`).join(''):'Nothing tricky yet — keep playing!'}</div>
   <h3 class="sub">Settings</h3><div class="notes">
@@ -1480,8 +1778,8 @@ function parentsView(){
    <div class="row" style="justify-content:flex-start;margin-top:8px"><b>This device</b><button class="chip" data-act="signOut">Sign out</button><button class="chip" data-act="reset">Start over…</button></div>
    <p class="tiny" style="margin-top:6px">To play on another device, open the game there and type the same name <b>${esc(S.name)}</b>. They'll also need the 4-number secret code. Sign out keeps the cloud save; Start over erases it on this device and in the cloud.</p></div>
   <h3 class="sub">How the game is designed</h3><div class="notes"><ul style="padding-left:18px;margin:0">
-   <li><b>Multiplication-first quest.</b> The main path covers the times tables in the usual teaching order: what × means (equal groups), ×2/×5/×10, ×3/×4/×6, ×7/×8/×9 and squares, then ×11/×12, ×10s and 2-digit × 1-digit by splitting (14 × 3 = 10 × 3 + 4 × 3). Addition is an optional bonus realm. Each times table has a crystal that lights up as its facts become strong over several days.</li>
-   <li><b>Age sets the difficulty.</b> Ages 4–6 get Little Paws: counting to 10, then adding to 10 with pictures, tap-the-answer choices, 6-question levels and questions read aloud. Ages 7–8 start with adding to 20 before the times tables. Ages 9+ start with the times tables. Stars already earned stay unlocked if the age is changed.</li>
+   <li><b>Four-operation quest.</b> 15 realms and about 100 levels cover counting, addition, subtraction, multiplication and division, in the usual teaching order. Each operation starts with pictures (taking away, fair sharing, equal groups), then strategies (count back, jump to 10, think addition, × facts turned around), then 2-digit work, remainders and two-step stories that mix all four. Every addition, subtraction, times and division fact has its own memory box. Each times table also has a crystal that lights up as its facts become strong over several days.</li>
+   <li><b>Age sets the difficulty.</b> Ages 4–6 (Little Paws) start with counting, adding to 10, taking away and fair sharing. Everything has pictures, tap-the-answer choices, 6-question levels and questions read aloud. Ages 7–8 (Middle Paws) start with adding and taking away to 20, then times tables, ÷2 ÷5 ÷10 and 2-digit work. Ages 9+ (Big Paws) start with times tables and division, then remainders and mixed two-step problems. Stars already earned stay unlocked if the age is changed.</li>
    <li><b>Secret code.</b> Each player picks a 4-number code that is asked when signing in by name, so brothers, sisters and friends can't open each other's game by accident. It's a kid-proof lock, not bank-grade security.</li>
    <li><b>Calm music and celebrations.</b> Soft background music made live in the browser (tap 🎵 to turn it off), a cheerful jingle when a lesson ends, and dance moves for the cat bought with yarn.</li>
    <li><b>Spaced repetition.</b> Every addition and times-table fact sits in its own memory box. Facts she gets right come back after 1, 2, 4, 7 then 14 days. Facts she misses come back sooner. Due facts are mixed into levels and the Review Garden.</li>
@@ -1547,14 +1845,21 @@ function startTable(t){
 }
 function lightningQ(){
   const b=band();
-  if(b==='little')return pick([G.count(1,10),G.picAdd(10),G.next(9),G.picAdd(5)])();
-  if(b==='middle'&&Math.random()<.6)return pick([G.add20,G.doubles,G.bridge10,G.mul([2,5,10])])();
-  const keys=Object.keys(S.facts).filter(k=>k[0]==='m'&&S.facts[k].box>=1);
+  if(b==='little')return pick([G.count(1,10),G.picAdd(10),G.next(9),G.picAdd(5),G.picSub(10),G.share(2,3,4)])();
+  if(b==='middle'&&Math.random()<.6)return pick([G.add20,G.doubles,G.bridge10,G.sub20,G.bridgeBack,G.mul([2,5,10]),G.div([2,5,10])])();
+  const keys=Object.keys(S.facts).filter(k=>(k[0]==='m'||k[0]==='d')&&S.facts[k].box>=1);
   if(keys.length>=8&&Math.random()<.8)return factToQ(pick(keys));
-  return pick([G.mul([2,5,10]),G.mul([2,5,10]),G.mul([3,4,6]),G.mul(ALL)])();
+  return pick([G.mul([2,5,10]),G.mul([3,4,6]),G.mul(ALL),G.div([2,5,10]),G.div(ALL)])();
 }
-const QUICK={count:{t:'🧸 Counting practice',g:()=>G.mix(G.count(1,10),G.next(9),G.more(10))},add10:{t:'🐸 Adding to 10',g:()=>G.mix(G.picAdd(10),G.picDouble(5),G.bond(10))},add20:{t:'🌸 Adding to 20',g:()=>G.mix(G.add20,G.bridge10,G.doubles,G.missAdd20)}};
-function startQuick(k){const Q=QUICK[k];if(!Q)return;newPlay({mode:'quick',qk:k,title:Q.t,qs:buildQueue(Q.g(),8,{review:false}),visual:true})}
+const QUICK={count:{t:'🧸 Counting practice',g:()=>G.mix(G.count(1,10),G.next(9),G.more(10))},add10:{t:'🐸 Adding to 10',g:()=>G.mix(G.picAdd(10),G.picDouble(5),G.bond(10))},add20:{t:'🌸 Adding to 20',g:()=>G.mix(G.add20,G.bridge10,G.doubles,G.missAdd20)},
+  sub10:{t:'🐰 Taking away',g:()=>G.mix(G.picSub(10),G.hide(10),G.sub10)},
+  share:{t:'🧺 Sharing',g:()=>G.mix(G.share(2,3,5),G.half(10))},
+  sub20:{t:'❄️ Taking away to 20',g:()=>G.mix(G.sub20,G.countBack,G.bridgeBack,G.subMiss(20))},
+  div:{t:'🧁 Sharing & dividing',g:()=>G.mix(G.share(2,5,5),G.div([2,5,10]),G.group([2,5,10],6))},
+  mixed4:{t:'🏮 All four mixed',novis:true,g:()=>G.mix(G.d2d2r,G.d2d2sr,G.mul(ALL),G.div(ALL),G.two,G.missMix)}};
+function startQuick(k){const Q=QUICK[k];if(!Q)return;newPlay({mode:'quick',qk:k,title:Q.t,qs:buildQueue(Q.g(),8,{review:false}),visual:!Q.novis})}
+function startDivTable(t){const qs=shuffle(range(1,12)).slice(0,10).map((m,i)=>{const r=Math.random();if(i>=2&&r<.2)return divMissQ([t]);if(i>=2&&r<.35)return divFlipQ([t]);return divQ(t,m)});newPlay({mode:'dtable',t,title:`➗ ÷${t} Dojo`,qs})}
+function divStrong(t){return range(1,12).filter(m=>{const f=S.facts['d'+t+'_'+m];return f&&f.box>=3}).length}
 function startLightning(){
   newPlay({mode:'lightning',title:'⚡ Lightning Paws',qs:[lightningQ()],score:0,end:Date.now()+60000,hints:0});
   P.timer=setInterval(()=>{if(!P||P.mode!=='lightning')return;const left=P.end-Date.now(),tb=$('#tbar');if(tb)tb.style.width=Math.max(0,left/600)+'%';if(left<=0){clearInterval(P.timer);P.timer=null;finishLightning()}},100);
@@ -1567,7 +1872,7 @@ function qDisplay(q){
   if(q.missing)return esc(q.mtext).replace('□',slot);
   return `${q.text} = ${slot}`;
 }
-const PIC_KINDS=['count','next','more','picadd','bond'];
+const PIC_KINDS=['count','next','more','picadd','bond','picsub','hide','share','half'];
 function picShown(q){return (P.visual||PIC_KINDS.includes(q.kind))&&!q.word}
 function renderPlay(){
   const q=P.qs[P.i];if(!q){P=null;UI.screen='home';return render()}
@@ -1720,7 +2025,7 @@ function finishLevel(){
 function finishPractice(){
   const n=P.credits.length,sc=P.credits.reduce((a,b)=>a+b,0)/Math.max(1,n),right=P.credits.filter(c=>c===1).length;
   const bonus=10;S.yarn+=bonus;P.yarn+=bonus;const g=P.mode==='garden';if(g)badge('garden');save();
-  modal(`<div class="lc"><div id="lcCat">${catHTML(cs(100),'happy')}</div><h2>${g?'Your garden bloomed! 🌷':P.mode==='quick'?'Practice done! 🎉':`×${P.t} training done!`}</h2>${g?`<div class="bloom">${'🌷'.repeat(Math.max(1,right))}</div>`:P.mode==='table'?`<p>×${P.t} facts that are strong: <b>${tableStrong(P.t)}/12</b></p>`:''}
+  modal(`<div class="lc"><div id="lcCat">${catHTML(cs(100),'happy')}</div><h2>${g?'Your garden bloomed! 🌷':P.mode==='quick'?'Practice done! 🎉':`${P.mode==='dtable'?'÷':'×'}${P.t} training done!`}</h2>${g?`<div class="bloom">${'🌷'.repeat(Math.max(1,right))}</div>`:P.mode==='table'?`<p>×${P.t} facts that are strong: <b>${tableStrong(P.t)}/12</b></p>`:P.mode==='dtable'?`<p>÷${P.t} facts that are strong: <b>${divStrong(P.t)}/12</b></p>`:''}
    <div class="lcstats"><div><b>${right}/${n}</b><small>first try</small></div><div><b>${P.maxCombo}</b><small>best combo</small></div><div><b>+${P.yarn}</b><small>yarn 🧶</small></div></div>
    <p class="growth">${growthMsg(sc,P.fixed)}</p>
    ${g?`<div id="chestZone"><button class="chest" data-act="openChest" aria-label="Open mystery gift">🎁</button><div class="tiny">Gardeners get a gift too!</div></div>`:''}
@@ -1753,7 +2058,7 @@ function endPlay(){
   if(P){if(P.timer)clearInterval(P.timer);if(P.mode==='level'){UI.realm=P.r;UI.tab='map'}}
   P=null;UI.screen='home';render();scrollTo(0,0);
 }
-function again(){if(!P)return;const p=P;closeModal();if(p.mode==='level')startLevel(p.r,p.l);else if(p.mode==='garden')startGarden();else if(p.mode==='table')startTable(p.t);else if(p.mode==='quick')startQuick(p.qk);else startLightning()}
+function again(){if(!P)return;const p=P;closeModal();if(p.mode==='level')startLevel(p.r,p.l);else if(p.mode==='garden')startGarden();else if(p.mode==='table')startTable(p.t);else if(p.mode==='quick')startQuick(p.qk);else if(p.mode==='dtable')startDivTable(p.t);else startLightning()}
 
 /* ---------------- scratch pad ---------------- */
 function openScratch(){
@@ -1956,6 +2261,7 @@ const ACT={
   speak:()=>{if(P&&P.qs[P.i])speakQ(P.qs[P.i])},
   voiceTest:()=>speak(`Hi! I'm ${catName()}. What is 3 plus 4?`),
   quick:d=>startQuick(d.k),
+  dtable:d=>startDivTable(Number(d.t)),
   mvTry:d=>{sfx.tap();moveStage(d.id)},
   mvAgain:d=>{const c=$('#stage .cat');if(c)doMove(c,d.id)},
   mvBuy:d=>buyMove(d.id),

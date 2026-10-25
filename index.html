@@ -2290,11 +2290,49 @@ addEventListener('resize',()=>{clearTimeout(UI.rsT);UI.rsT=setTimeout(()=>{const
 try{if('speechSynthesis' in window)speechSynthesis.addEventListener('voiceschanged',()=>{if(VOICE===undefined)resolveVoice();const sel=$('#voiceSel');if(sel&&!sel.matches(':focus'))sel.innerHTML=voiceOptions()})}catch(e){}
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='voiceSel'){try{localStorage.setItem(VOICE_KEY,e.target.value)}catch(_){}VOICE=undefined;speak(`Hi! I'm ${catName()}. What is 3 plus 4?`)}});
 
+/* ---------------- anonymous play counter ----------------
+   Counts launches so William can see whether the game is being played.
+   Records: a random device id (not derived from anything personal), whether
+   the device is new, the referring site's hostname, installed-app vs browser
+   tab, and the window width. No names, no progress, no personal data.
+   Entirely fire-and-forget: any failure is swallowed so play never breaks. */
+const VISITOR_KEY='whiskerAcademy.vid';
+function visitorId(){
+  try{
+    let v=localStorage.getItem(VISITOR_KEY);
+    if(v)return{id:v,fresh:false};
+    const b=new Uint8Array(8);(crypto||{}).getRandomValues?crypto.getRandomValues(b):b.forEach((_,i)=>b[i]=Math.floor(Math.random()*256));
+    v=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');
+    localStorage.setItem(VISITOR_KEY,v);
+    return{id:v,fresh:true};
+  }catch(e){return null} // private mode / storage blocked: skip counting
+}
+function refHost(){
+  try{return document.referrer?new URL(document.referrer).hostname.slice(0,64):null}catch(e){return null}
+}
+function launchMode(){
+  try{
+    const standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+    return standalone?'app':'browser';
+  }catch(e){return null}
+}
+function countPlay(){
+  try{
+    const v=visitorId();if(!v)return;
+    fetch(CLOUD.url+'wa_hit',{
+      method:'POST',keepalive:true,
+      headers:{apikey:CLOUD.key,Authorization:'Bearer '+CLOUD.key,'Content-Type':'application/json'},
+      body:JSON.stringify({p_visitor:v.id,p_new:v.fresh,p_ref:refHost(),p_mode:launchMode(),p_w:Math.round(innerWidth)||null})
+    }).catch(()=>{});
+  }catch(e){}
+}
+
 (async function boot(){
   UI.realm=pickStartRealm();
   let synced=false;
   if(S.name&&needsSetup()&&S.cloud){app.innerHTML='<div class="onb"><p class="lead">Loading your game… 🐾</p></div>';try{await Promise.race([cloudSync(),new Promise(r=>setTimeout(r,4000))]);synced=true}catch(e){}UI.realm=pickStartRealm()}
   render();if(S.name){if(!needsSetup())setTimeout(checkDaily,500);if(!synced)cloudSync()}
+  countPlay();
 })();
 </script>
 </body>

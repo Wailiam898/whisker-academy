@@ -905,7 +905,7 @@ function mergeFrom(c){ // combine progress from two devices: nothing earned on e
   if(c.streak&&(c.streak.count||0)>(S.streak.count||0))S.streak=c.streak;
   for(const k of['giftDay','drawDay','challengeDay'])if((c[k]||'')>(S[k]||''))S[k]=c[k];
   if(!S.danceMove&&c.danceMove)S.danceMove=c.danceMove;
-  if(c.bonus){const b=S.bonus||(S.bonus={});b.best=Math.max(b.best||0,c.bonus.best||0);b.plays=Math.max(b.plays||0,c.bonus.plays||0);if((c.bonus.day||'')>(b.day||'')){b.day=c.bonus.day;b.today=c.bonus.today||0}if(!b.passes&&c.bonus.passes)b.passes=c.bonus.passes}
+  if(c.bonus){const b=S.bonus||(S.bonus={});b.best=Math.max(b.best||0,c.bonus.best||0);b.plays=Math.max(b.plays||0,c.bonus.plays||0);b.realms=[...new Set([...(Array.isArray(b.realms)?b.realms:[]),...(Array.isArray(c.bonus.realms)?c.bonus.realms:[])])];if(!b.passes&&c.bonus.passes)b.passes=c.bonus.passes}
   const base=S.baseYarn==null?Math.min(S.yarn,c.yarn||0):S.baseYarn;
   S.yarn=Math.max(0,S.yarn+(c.yarn||0)-base);
 }
@@ -2165,7 +2165,7 @@ function parentsView(){
    <li><b>No time pressure by default</b> (Boaler: timed tests drive maths anxiety). Lightning Paws is optional, and she only races her own best score.</li>
    <li><b>Self-Determination Theory.</b> Autonomy (she picks the realm, table and outfit), competence (stars, mastery bars) and relatedness (a named cat companion who cheers her on).</li>
    <li><b>"Candy Crush" loop, made kind.</b> She gets short 2–4 minute levels, 3-star ratings, a level map, combos, mystery gifts, a sticker collection and a daily gift. There are <b>no</b> lives, no losing, no ads and no purchases. A missed day is forgiven by a "cat nap", and a break reminder pops up after a set time.</li>
-   <li><b>Bonus game, earned not given.</b> Treat Tumble (a catch-the-treats game, no maths) unlocks only after a stretch of real learning: ${BONUS.mins.little} minutes and ${BONUS.right.little} right answers for ages 4–6, ${BONUS.mins.big} minutes and ${BONUS.right.big} right answers for ages 9+. Only time spent answering counts, a 20-minute break restarts the count, and it is limited to ${BONUS.perDay} plays a day. A round lasts about a minute. ${S.bonus&&S.bonus.plays?`Played ${S.bonus.plays} time${S.bonus.plays>1?'s':''} so far, best score ${S.bonus.best}.`:''}</li>
+   <li><b>Bonus game, earned not given.</b> Treat Tumble (a catch-the-treats game, no maths) is won by finishing a whole map: every level, including the guardian at the end. Each map gives one play, the first time it is finished, so it can't be farmed by replaying. A round lasts about a minute. ${S.bonus&&S.bonus.plays?`Played ${S.bonus.plays} time${S.bonus.plays>1?'s':''} so far, best score ${S.bonus.best}.`:''}</li>
    <li><b>Win dance.</b> Dance moves bought with yarn can be picked as the cat's win dance in the Closet. It plays at the end of every level.</li>
    <li><b>Tips:</b> 10–15 minutes a day works better than one long session. Ask her to teach <i>you</i> a strategy. Celebrate effort and the tricky facts she conquers.</li>
   </ul></div>`;
@@ -2363,7 +2363,7 @@ function submit(val){
   if(same(val,q.ans)){
     const first=P.tries===0&&!P.hintUsed,credit=P.tries===0?(P.hintUsed?.5:1):.5;
     if(!q.requeued)P.credits.push(credit);
-    recordFact(q,first);checkCrystals(q);S.stats.answered++;if(first)S.stats.firstTry++;bonusRight();
+    recordFact(q,first);checkCrystals(q);S.stats.answered++;if(first)S.stats.firstTry++;
     if(P.tries>0||q.requeued)P.fixed++;
     P.combo=first?P.combo+1:0;P.maxCombo=Math.max(P.maxCombo,P.combo);S.stats.bestCombo=Math.max(S.stats.bestCombo,P.combo);
     if(P.combo>=5)badge('combo5');if(P.combo>=10)badge('combo10');
@@ -2419,7 +2419,7 @@ function useHint(){
 }
 function lightningSubmit(val,q){
   const a=$('#ans');P.locked=true;
-  if(same(val,q.ans)){P.score++;bonusRight();recordFact(q,true);checkCrystals(q);S.stats.answered++;S.stats.firstTry++;P.combo++;sfx.correct(Math.min(P.combo,12));
+  if(same(val,q.ans)){P.score++;recordFact(q,true);checkCrystals(q);S.stats.answered++;S.stats.firstTry++;P.combo++;sfx.correct(Math.min(P.combo,12));
     if(a){a.classList.add('right');const r=a.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,['⚡','✨'],6)}
     setTimeout(lnext,220)}
   else{P.combo=0;sfx.wrong();recordFact(q,false);S.stats.answered++;if(a){a.textContent=q.ans;a.classList.add('reveal')}setTimeout(lnext,900)}
@@ -2446,6 +2446,7 @@ function finishLevel(){
   const stars=sc>=.9?3:sc>=.65?2:1,id=lid(P.r,P.l),prev=S.stars[id]||0;
   const beforeRank=rankInfo().i,beforeUnl=REALMS.map((_,i)=>realmUnlocked(i));
   S.stars[id]=Math.max(prev,stars);
+  if(P.l===R.levels.length-1)bonusRealmDone(R.id);
   const bonus=5+stars*5+(prev?0:10);S.yarn+=bonus;P.yarn+=bonus;S.stats.levels++;
   badge('first');if(stars===3)badge('perfect');if(L.boss)badge('r_'+R.id);
   save();
@@ -2519,32 +2520,23 @@ function openScratch(){
 function closeScratch(silent){const s=$('#scratch');if(s)s.remove();if(silent&&P&&P.scratchFor!==P.i)P.scratch=null}
 
 /* ---------------- bonus game: Treat Tumble ----------------
-   Earned, never handed out: a play pass needs a stretch of real learning (minutes spent answering, plus enough right answers).
-   At most 2 passes a day and 3 saved up. A break of 20+ minutes starts the stretch again. */
-const BONUS={mins:{little:10,middle:15,big:15},right:{little:15,middle:25,big:30},perDay:2,maxHeld:3,resetMins:20};
-function bonusState(){if(!S.bonus||typeof S.bonus!=='object')S.bonus={};const b=S.bonus,t=dayKey();for(const k of['learn','right','passes','today','best','last','plays'])b[k]=b[k]||0;if(b.day!==t){b.day=t;b.today=0}return b}
-function bonusNeed(){const bd=band();return{secs:BONUS.mins[bd]*60,right:BONUS.right[bd]}}
-function bonusCapped(){const b=bonusState();return b.today>=BONUS.perDay||b.passes>=BONUS.maxHeld}
-function bonusTick(){const b=bonusState(),now=Date.now();
-  if(UI.screen==='play'&&P&&P.lastAns&&now-P.lastAns<45000){b.learn+=10;b.last=now;bonusCheck()}
-  else if(b.last&&now-b.last>BONUS.resetMins*60000&&(b.learn||b.right)&&!bonusCapped()){b.learn=0;b.right=0}}
-function bonusRight(){const b=bonusState();b.right++;bonusCheck()}
-function bonusCheck(){const b=bonusState(),n=bonusNeed();if(bonusCapped()){b.learn=Math.min(b.learn,n.secs);return}
-  if(b.learn>=n.secs&&b.right>=n.right){b.passes++;b.today++;b.learn=0;b.right=0;UI.passNew=true;save();
-    toast(`<span class="ti">🎟️</span><div><b>Bonus game earned!</b><br>Finish this round, then play Treat Tumble from the map.</div>`);sfx.fanfare()}}
-function bonusCard(){const b=bonusState(),n=bonusNeed();
-  if(b.passes>0)return `<div class="bonuscard ready"><div class="bi">🎮</div><div class="grow"><b>Treat Tumble</b><div class="tiny">You earned ${b.passes} bonus play${b.passes>1?'s':''} by learning! 🎟️</div></div><button class="btn sun" data-act="bonus">Play ▶</button></div>`;
-  if(bonusCapped())return `<div class="bonuscard"><div class="bi">🌙</div><div class="grow"><b>Treat Tumble</b><div class="tiny">You earned today's bonus games. Amazing learning! More tomorrow.</div></div></div>`;
-  const p=Math.min(b.learn/n.secs,b.right/n.right,1);
-  return `<div class="bonuscard" data-act="bonus" role="button"><div class="bi">🔒</div><div class="grow"><b>Bonus game: Treat Tumble</b><div class="meter"><i style="width:${Math.round(p*100)}%"></i></div><div class="tiny">${band()==='little'?`Keep learning to unlock it! ${'🐾'.repeat(Math.round(p*5))}${'·'.repeat(5-Math.round(p*5))}`:`Unlocks after ${n.secs/60} minutes of learning with ${n.right} right answers: ${Math.floor(b.learn/60)}/${n.secs/60} min · ${Math.min(b.right,n.right)}/${n.right} right`}</div></div></div>`}
-function passBanner(){if(!UI.passNew)return '';UI.passNew=false;return `<div class="passban">🎟️ <b>You earned a bonus game!</b> <button class="chip" data-act="bonus">Play Treat Tumble ▶</button></div>`}
+   Earned, never handed out: finishing the last level of a map (cheering up its guardian) gives one bonus play.
+   Each map pays out once, the first time it is finished, so replaying a boss can't farm passes. */
+function bonusState(){if(!S.bonus||typeof S.bonus!=='object')S.bonus={};const b=S.bonus;for(const k of['passes','best','plays'])b[k]=b[k]||0;if(!Array.isArray(b.realms))b.realms=[];return b}
+function bonusRealmDone(id){const b=bonusState();if(b.realms.includes(id))return false;b.realms.push(id);b.passes++;UI.passNew=true;save();return true}
+function bonusCard(){const b=bonusState();
+  if(b.passes>0)return `<div class="bonuscard ready"><div class="bi">🎮</div><div class="grow"><b>Treat Tumble</b><div class="tiny">You won ${b.passes} bonus play${b.passes>1?'s':''} by finishing a map! 🎟️</div></div><button class="btn sun" data-act="bonus">Play ▶</button></div>`;
+  const ri=UI.tab==='map'&&realmList().includes(UI.realm)?UI.realm:pickStartRealm(),R=REALMS[ri],n=R.levels.length,done=R.levels.filter((_,i)=>S.stars[lid(ri,i)]).length;
+  if(b.realms.includes(R.id))return `<div class="bonuscard" data-act="bonus" role="button"><div class="bi">✅</div><div class="grow"><b>Bonus game: Treat Tumble</b><div class="tiny">You already won ${R.name}'s bonus game. Finish another map to win the next one!</div></div></div>`;
+  return `<div class="bonuscard" data-act="bonus" role="button"><div class="bi">🔒</div><div class="grow"><b>Bonus game: Treat Tumble</b><div class="meter"><i style="width:${Math.round(done/n*100)}%"></i></div><div class="tiny">Finish all ${n} levels of ${R.name} and cheer up ${R.guardian.name} ${R.guardian.e} to win it! ${done}/${n} levels</div></div></div>`}
+function passBanner(){if(!UI.passNew)return '';UI.passNew=false;setTimeout(()=>{sfx.fanfare();if(readAloud())speak('You finished the map! You won a bonus game!')},2400);return `<div class="passban">🎟️ <b>Map finished! You won a bonus game!</b> <button class="chip" data-act="bonus">Play Treat Tumble ▶</button></div>`}
 const TT={fish:{e:'🐟',pts:1,w:6},yarn:{e:'🧶',pts:1,w:5},cookie:{e:'🍪',pts:1,w:5},milk:{e:'🥛',pts:2,w:2},star:{e:'⭐',pts:5,w:1},gem:{e:'💎',pts:10,w:.3},
   cuc:{e:'🥒',bad:1,w:2},rain:{e:'🌧️',bad:1,w:1.2},heart:{e:'💖',life:1,w:.3},magnet:{e:'🧲',pow:'magnet',w:.35},big:{e:'🍄',pow:'big',w:.3},frenzy:{e:'🌈',pow:'frenzy',w:.25}};
 const POW_TXT={magnet:'🧲 Treat magnet!',big:'🍄 Giant cat!',frenzy:'🌈 Treat shower!'};
 let TB=null;
 function startBonus(){
-  const b=bonusState(),n=bonusNeed();closeModal();
-  if(b.passes<1)return modal(`<h2>🎮 Treat Tumble</h2><div style="font-size:46px">🐟🧶🥒</div><p>A bonus game you <b>earn by learning</b>.</p><p class="tiny">${band()==='little'?'Keep playing levels and it will unlock!':`Spend ${n.secs/60} minutes learning and get ${n.right} answers right (a long break starts the count again). You can earn ${BONUS.perDay} a day.`}</p><button class="btn" data-act="close">OK</button>`);
+  const b=bonusState();closeModal();
+  if(b.passes<1)return modal(`<h2>🎮 Treat Tumble</h2><div style="font-size:46px">🐟🧶🥒</div><p>A bonus game you <b>win by finishing a map</b>.</p><p class="tiny">Play every level of a map, right to the guardian at the end. Cheer them up and you win a Treat Tumble play! Each map gives one.</p><button class="btn" data-act="close">OK</button>`);
   b.passes--;b.plays++;save();
   const d=document.createElement('div');d.id='tumble';
   d.innerHTML=`<div class="tb-sky">${['12%:34s:0s','28%:46s:-18s','8%:52s:-30s'].map(v=>{const [t,du,de]=v.split(':');return `<span class="tb-cl" style="top:${t};animation-duration:${du};animation-delay:${de}">☁️</span>`}).join('')}</div>
@@ -2828,7 +2820,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Backspace'){e.preventDefault();press('del')}
   else if(e.key==='Enter'){e.preventDefault();if(P.explaining)ACT.gotit();else press('ok')}
 });
-setInterval(()=>{if(!document.hidden&&S.name){S.stats.seconds+=10;bonusTick();persistLocal()}},10000);
+setInterval(()=>{if(!document.hidden&&S.name){S.stats.seconds+=10;persistLocal()}},10000);
 
 /* ---------------- go! ---------------- */
 /* audio needs a tap before it can start (iPhone/iPad rule) */

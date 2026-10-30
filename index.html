@@ -600,6 +600,32 @@ button.me{cursor:pointer}
   .play-right{position:sticky;top:16px}
 }
 
+/* Hall of Fame: old-school arcade high-score table */
+.modal.hofm{background:#120d2e;color:#fff;border:4px solid #ffc43d;box-shadow:0 0 0 4px #120d2e,0 0 30px #ff6fae,0 20px 60px rgba(0,0,0,.5)}
+.hof{font-family:"Courier New",ui-monospace,monospace;font-weight:900;text-transform:uppercase}
+.hof-title{font-size:26px;color:#ffd84a;text-shadow:0 0 8px #ff9a3d,3px 3px 0 #d94a8c;letter-spacing:2px}
+.hof-sub{font-size:13px;color:#7fe8ff;letter-spacing:3px;margin:2px 0 8px}
+.hof-tabs{display:flex;gap:6px;justify-content:center;margin-bottom:8px}
+.hof-tabs button{font:inherit;font-size:14px;color:#9a8fc7;background:#221a4d;border-radius:10px;padding:6px 12px}
+.hof-tabs button.on{color:#120d2e;background:#7fe8ff}
+.hof-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.hof-row{display:grid;grid-template-columns:3.2em auto 1fr auto;align-items:center;gap:8px;background:#1d1645;border-radius:12px;padding:3px 10px;text-align:left}
+.hof-row.p1{background:linear-gradient(90deg,#4a3a00,#1d1645)}.hof-row.p2{background:linear-gradient(90deg,#3b3f4f,#1d1645)}.hof-row.p3{background:linear-gradient(90deg,#4a2a14,#1d1645)}
+.hof-row.me{outline:3px solid #ff6fae;animation:hofMe 1.2s steps(2) infinite}
+@keyframes hofMe{50%{outline-color:#ffd84a}}
+.hof-pos{font-size:18px;color:#ffd84a;text-align:center}
+.hof-who{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+.hof-who b{font-size:18px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hof-who small{font-size:10px;color:#7fe8ff;letter-spacing:1px;font-weight:700}
+.hof-score{font-size:20px;color:#7dff8a;text-shadow:0 0 6px #2bd14a;letter-spacing:1px}
+.hof-me{margin-top:10px;color:#ffd84a;font-size:15px}.hof-me small{color:#9a8fc7;font-size:11px}
+.hof-empty{padding:26px 0;color:#7fe8ff;font-size:18px}.hof-empty small{color:#9a8fc7;font-size:12px}
+.blink{animation:hofBlink 1s steps(2) infinite}
+@keyframes hofBlink{50%{opacity:.25}}
+.hof-close{margin-top:12px;font-family:inherit}
+.hofbtn{font-size:22px;padding:6px 10px;margin-left:4px}
+.tb-rank{color:#6a3fd1;font-weight:800;min-height:1.2em;margin:2px 0}
+
 /* accessories inside the cat drawing */
 .cat .acc2{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;pointer-events:none}
 .wintag{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--sun,#ffc43d);color:#3b2a4f;font-size:11px;font-weight:800;border-radius:99px;padding:1px 8px;white-space:nowrap}
@@ -2148,6 +2174,8 @@ function parentsView(){
    <div class="row" style="justify-content:flex-start;margin-top:8px"><b>Age</b><span>${S.age?(S.age>=12?'12+':S.age):'not set'}</span><button class="chip" data-act="ageChange">Change age</button></div>
    <p class="tiny" style="margin:2px 0 0">${BAND_LABEL[band()]}</p>
    <div class="row" style="justify-content:flex-start;margin-top:8px"><b>Secret code</b><span>🔐 ${S.pinHash?'set':'not set'}</span><button class="chip" data-act="pinChange">Change code</button></div>
+   <div class="row" style="justify-content:flex-start;margin-top:8px"><b>Hall of Fame</b><button class="chip ${!S.settings.hideBoard?'on':''}" data-act="hofHide" data-v="0">Show ${esc(firstName(S.name))}</button><button class="chip ${S.settings.hideBoard?'on':''}" data-act="hofHide" data-v="1">Hide</button><button class="chip" data-act="hof">🏆 View</button></div>
+   <p class="tiny" style="margin:2px 0 0">The Treat Tumble high-score board is seen by everyone who plays Whisker Academy. It only ever shows a <b>first name</b> (“${esc(firstName(S.name))}”), the cat picture, the Keeper rank and the score. Hide takes ${esc(firstName(S.name))} off the board straight away and stops new scores being posted. ${S.cloud?'':'Only cloud-saved players appear on the board.'}</p>
    <div class="row" style="justify-content:flex-start;margin-top:8px"><b>Cloud save</b><span>${S.cloud?`☁️ saved as <b>${esc(S.name)}</b>`:'📱 this device only'}</span>${S.cloud?'':'<button class="chip" data-act="cloudJoin">Save to cloud</button>'}</div>
    <div class="row" style="justify-content:flex-start;margin-top:8px"><b>This device</b><button class="chip" data-act="signOut">Sign out</button><button class="chip" data-act="reset">Start over…</button></div>
    <p class="tiny" style="margin-top:6px">To play on another device, open the game there and type the same name <b>${esc(S.name)}</b>. They'll also need the 4-number secret code. Sign out keeps the cloud save; Start over erases it on this device and in the cloud.</p></div>
@@ -2524,7 +2552,8 @@ function closeScratch(silent){const s=$('#scratch');if(s)s.remove();if(silent&&P
    Each map pays out once, the first time it is finished, so replaying a boss can't farm passes. */
 function bonusState(){if(!S.bonus||typeof S.bonus!=='object')S.bonus={};const b=S.bonus;for(const k of['passes','best','plays'])b[k]=b[k]||0;if(!Array.isArray(b.realms))b.realms=[];return b}
 function bonusRealmDone(id){const b=bonusState();if(b.realms.includes(id))return false;b.realms.push(id);b.passes++;UI.passNew=true;save();return true}
-function bonusCard(){const b=bonusState();
+function bonusCard(){return bonusCard0().replace(/<\/div><\/div>$/,'</div><button class="chip hofbtn" data-act="hof" aria-label="Hall of Fame">🏆</button></div>')}
+function bonusCard0(){const b=bonusState();
   if(b.passes>0)return `<div class="bonuscard ready"><div class="bi">🎮</div><div class="grow"><b>Treat Tumble</b><div class="tiny">You won ${b.passes} bonus play${b.passes>1?'s':''} by finishing a map! 🎟️</div></div><button class="btn sun" data-act="bonus">Play ▶</button></div>`;
   const ri=UI.tab==='map'&&realmList().includes(UI.realm)?UI.realm:pickStartRealm(),R=REALMS[ri],n=R.levels.length,done=R.levels.filter((_,i)=>S.stars[lid(ri,i)]).length;
   if(b.realms.includes(R.id))return `<div class="bonuscard" data-act="bonus" role="button"><div class="bi">✅</div><div class="grow"><b>Bonus game: Treat Tumble</b><div class="tiny">You already won ${R.name}'s bonus game. Finish another map to win the next one!</div></div></div>`;
@@ -2594,11 +2623,43 @@ function tbCatch(it,d){const T=TB,y=T.H-cs(96);
   const g=d.pts*T.mult;T.score+=g;tbPop(it.x,y,'+'+g,d.pts>=5?'goldpop':'');tone(620+Math.min(T.combo,20)*28,.07,'triangle',.06);tbHud()}
 function tbEnd(why){const T=TB;if(!T||!T.run)return;T.run=false;T.items.forEach(i=>i.el.remove());T.items=[];
   const b=bonusState(),pb=T.score>b.best;if(pb)b.best=T.score;const y=Math.min(10,Math.floor(T.score/20));S.yarn+=y;save();
+  if(T.score>0)boardSubmit(T.score).then(r=>{const el=$('#tbRank');if(!el||!r||!r.ok||r.hidden)return;el.innerHTML=r.rank_week===1?'🏆 <b>#1 this week!</b>':r.rank_week&&r.rank_week<=10?`🏆 You're <b>#${r.rank_week}</b> this week!`:r.rank_all<=10?`🏆 You're <b>#${r.rank_all}</b> of all time!`:''});
   sfx.finish();if(pb&&T.score>0)confetti(70);
-  $('#tbMsg').innerHTML=`<div class="tb-card"><h2>${why==='lives'?'Out of hearts!':why==='quit'?'Game over':"Time's up!"}</h2><div id="tbEndCat">${catHTML(cs(120),'happy')}</div><div class="tb-final">${T.score}</div><p>${pb&&T.score>0?'<b>New best score!</b> 🎉':`Best: <b>${b.best}</b>`}</p><p class="tiny">${T.caught} treats caught${y?` · +${y} 🧶`:''}</p>
-   <div class="row" style="margin-top:8px">${b.passes>0?`<button class="btn sun" data-act="tbAgain">Play again (🎟️ ${b.passes})</button>`:''}<button class="btn ghost" data-act="tbDone">Done</button></div>${b.passes>0?'':'<p class="tiny" style="margin-top:6px">Keep learning to earn another bonus game!</p>'}</div>`;
+  $('#tbMsg').innerHTML=`<div class="tb-card"><h2>${why==='lives'?'Out of hearts!':why==='quit'?'Game over':"Time's up!"}</h2><div id="tbEndCat">${catHTML(cs(120),'happy')}</div><div class="tb-final">${T.score}</div><p>${pb&&T.score>0?'<b>New best score!</b> 🎉':`Best: <b>${b.best}</b>`}</p><p class="tiny">${T.caught} treats caught${y?` · +${y} 🧶`:''}</p><p id="tbRank" class="tb-rank"></p>
+   <div class="row" style="margin-top:8px">${b.passes>0?`<button class="btn sun" data-act="tbAgain">Play again (🎟️ ${b.passes})</button>`:''}<button class="btn" data-act="hof">🏆 Hall of Fame</button><button class="btn ghost" data-act="tbDone">Done</button></div>${b.passes>0?'':'<p class="tiny" style="margin-top:6px">Finish another map to win another bonus game!</p>'}</div>`;
   setTimeout(()=>{const c=$('#tbEndCat .cat');if(c){const w=winMove();if(w)doMove(c,w);else celebrate(c)}},700);
   if(readAloud())setTimeout(()=>speak(`You scored ${T.score}!`),900)}
+/* ---------------- Hall of Fame: arcade high scores for Treat Tumble ----------------
+   The database keeps only the first name, the cat's look, the Keeper rank and the scores.
+   Grown-ups can hide a player (Grown-ups corner); hidden players never appear and stop posting. */
+function firstName(n){const f=String(n||'').trim().split(/\s+/)[0]||'';return (f.charAt(0).toUpperCase()+f.slice(1).toLowerCase()).slice(0,12)}
+function boardOn(){return !!S.cloud&&!!S.pinHash&&!S.settings.hideBoard}
+async function boardSubmit(score,weekly=true){if(!boardOn())return null;
+  try{const r=await rpc('wa_score_submit',{p_name:S.name,p_pin:S.pinHash,p_score:score,p_cat:{f:S.fur,e:S.equipped},p_keeper:rankInfo().name,p_weekly:weekly});
+    if(r&&r.hidden&&!S.settings.hideBoard){S.settings.hideBoard=true;save()}return r}catch(e){return null}}
+async function boardHide(h){S.settings.hideBoard=h;save();render();
+  try{const r=await rpc('wa_score_hide',{p_name:S.name,p_pin:S.pinHash,p_hidden:h});if(!h&&bonusState().best)boardSubmit(bonusState().best,false);
+    toast(`<span class="ti">🏆</span><div>${r&&r.ok?(h?`${esc(firstName(S.name))} is hidden from the Hall of Fame.`:`${esc(firstName(S.name))} is back on the Hall of Fame.`):'Saved on this device. The board will update next time there is internet.'}</div>`)}
+  catch(e){toast('<span class="ti">☁️</span><div>No internet right now. Try again soon.</div>')}}
+const HOF_MED=['🥇','🥈','🥉'];
+function hofRows(top){if(!top.length)return '<div class="hof-empty">NO SCORES YET<br><small>Finish a map, play Treat Tumble, and be the first!</small></div>';
+  return '<ol class="hof-list">'+top.map((t,i)=>{const c=t.c||{};return `<li class="hof-row ${t.me?'me':''} p${i+1}"><span class="hof-pos">${HOF_MED[i]||(i+1)+'TH'}</span><span class="hof-cat">${catHTML(cs(50),'happy',{fur:FURS[c.f]?c.f:'ginger',equipped:c.e&&typeof c.e==='object'?c.e:{}})}</span><span class="hof-who"><b>${esc(t.n||'?')}</b><small>${esc(t.r||'Keeper')}</small></span><span class="hof-score">${String(t.s||0).padStart(5,'0')}</span></li>`}).join('')+'</ol>'}
+async function openBoard(period){
+  period=period||UI.hofTab||'all';UI.hofTab=period;sfx.tap();
+  const tabs=`<div class="hof-tabs"><button class="${period==='all'?'on':''}" data-act="hof" data-p="all">ALL-TIME</button><button class="${period==='week'?'on':''}" data-act="hof" data-p="week">THIS WEEK</button></div>`;
+  const shell=body=>`<div class="hof"><div class="hof-title">🏆 HALL OF FAME 🏆</div><div class="hof-sub">TREAT TUMBLE · HIGH SCORES</div>${tabs}${body}<button class="btn ghost hof-close" data-act="close">Close</button></div>`;
+  modal(shell('<div class="hof-empty blink">LOADING…</div>'));const m=$('#overlay .modal');if(m)m.classList.add('hofm');
+  if(boardOn()&&bonusState().best&&!UI.hofSynced){UI.hofSynced=true;await boardSubmit(bonusState().best,false)}
+  let d=null;try{d=await rpc('wa_board',{p_period:period,p_name:S.name})}catch(e){}
+  if(!$('#overlay .hof')||UI.hofTab!==period)return;
+  let me='';
+  if(!d)me='<div class="hof-me">NO INTERNET. TRY AGAIN SOON!</div>';
+  else if(S.settings.hideBoard||(d.me&&d.me.hidden))me=`<div class="hof-me">${esc(firstName(S.name))} IS HIDDEN FROM THE BOARD<br><small>A grown-up can change this in ⚙️ Grown-ups corner</small></div>`;
+  else if(!S.cloud)me='<div class="hof-me">TURN ON CLOUD SAVE TO JOIN THE BOARD</div>';
+  else if(d.me&&d.me.s>0&&!(d.top||[]).some(t=>t.me))me=`<div class="hof-me">YOU: #${d.me.rank} · ${String(d.me.s).padStart(5,'0')}</div>`;
+  else if(!(d.me&&d.me.s>0))me=`<div class="hof-me blink">★ ${period==='week'?'NO SCORE THIS WEEK YET':'PLAY TREAT TUMBLE TO GET ON THE BOARD'} ★</div>`;
+  const ov=$('#overlay .modal');if(ov)ov.innerHTML=shell((d?hofRows(d.top||[]):'')+me);
+}
 function tbClose(){if(TB)TB.run=false;TB=null;const d=$('#tumble');if(d)d.remove();render()}
 document.addEventListener('keydown',e=>{if(!TB)return;if(e.key==='ArrowLeft'){TB.keys.l=true;e.preventDefault()}if(e.key==='ArrowRight'){TB.keys.r=true;e.preventDefault()}});
 document.addEventListener('keyup',e=>{if(!TB)return;if(e.key==='ArrowLeft')TB.keys.l=false;if(e.key==='ArrowRight')TB.keys.r=false});
@@ -2802,6 +2863,8 @@ const ACT={
   tbGo:()=>tbGo(),
   tbQuit:()=>{if(TB&&TB.run)tbEnd('quit');else tbClose()},
   tbDone:()=>tbClose(),
+  hof:d=>openBoard(d.p),
+  hofHide:d=>boardHide(d.v==='1'),
   tbAgain:()=>{tbClose();startBonus()},
   tbResume:()=>{if(TB){$('#tbMsg').innerHTML='';TB.paused=false}},
   switchPlayer:()=>{sfx.tap();if(!S.cloud)return modal(`<h2>Switch player?</h2><p>This game is only saved on this device, so switching would erase it. Ask a grown-up to tap ⚙️ and choose <b>Save to cloud</b> first.</p><button class="btn" data-act="close">OK</button>`);

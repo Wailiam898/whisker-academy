@@ -4,7 +4,7 @@ async function check(){
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const script=html.match(/<script>([\s\S]*?)<\/script>/)[1].replace(/\(async function boot\(\)\{[\s\S]*$/,'');
  const nop=()=>{},el={classList:{add:nop,remove:nop,toggle:nop},style:{},addEventListener:nop};
- const ctx=vm.createContext({console,Date,Math,Promise,JSON,Set,Map,Number,String,Object,Array,RegExp,Uint8Array,innerWidth:390,screen:{width:390,height:844},document:{querySelector:s=>s==='#app'?el:null,addEventListener:nop,hidden:false},localStorage:{getItem:()=>null,setItem:nop},window:{addEventListener:nop},addEventListener:nop,setInterval:()=>0,clearInterval:nop,setTimeout:()=>0,clearTimeout:nop});
+ const ctx=vm.createContext({console,Date,Math,Promise,JSON,Set,Map,Number,String,Object,Array,RegExp,Uint8Array,innerWidth:390,innerHeight:844,screen:{width:390,height:844},document:{querySelector:s=>s==='#app'?el:null,addEventListener:nop,hidden:false},localStorage:{getItem:()=>null,setItem:nop},window:{addEventListener:nop},addEventListener:nop,setInterval:()=>0,clearInterval:nop,setTimeout:()=>0,clearTimeout:nop});
  vm.runInContext(script,ctx);
  const run=s=>vm.runInContext(s,ctx);
  run("S=defaults();S.name='Test Keeper';S.age=10;save=()=>{};persistLocal=()=>{};sfx.tap=()=>{}");
